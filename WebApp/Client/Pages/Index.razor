@@ -1,49 +1,66 @@
 ﻿@page "/"
 @inject HttpClient http;
-@inject WebApp.Client.Services.IUserService UserService;
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using WebApp.Shared
- 
+@using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+
+
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
 
+@if (users != null)
+{
+    <h1> Users: (@users.Count())</h1>
+    <ul class="list-group">
 
-<h3> User info (@users.Count())</h3>
-
-<ul class="list-group">
-    @if (users != null)
-    {
-        @foreach (var x in users)
+        @foreach (var user in users)
         {
-            <li class="list-group-item">
-                <p>@x</p>
-            </li>
+        <li class="list-group-item">
+            <p>UserID: @user.Password</p>
+            <p>UserEmail: @user.Username</p>
+            @for (int count = 0; count < @user.projects.Count(); count++)
+            {
+                <p>Projects: @user.projects[count].ProjectName </p>
+            }
+
+            @for (int count = 0; count < @user.assignedTickets.Count(); count++)
+            {
+                <p>Ticket: @user.assignedTickets[count].Title </p>
+                <p>@user.assignedTickets[count].ticketType.ToString()</p>
+            }
+        </li>
+
+
         }
-    }
-    else
-    {
-        <p> The value is null</p>
-    }
-</ul>
+    </ul>
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+            Dropdown button
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+    </div>
 
+}
+else
+{
+    <p> The value is null</p>
 
+}
 
 @code {
-    private List<ApplicationUser> users = new List<ApplicationUser>();
+
+    private List<User> users { get; set; } = new List<User>();
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            users = await http.GetFromJsonAsync<List<ApplicationUser>>("UsersController");
-        }
-        catch (AccessTokenNotAvailableException exception)
-        {
-            exception.Redirect();
-        }
+        users = await http.GetFromJsonAsync<List<User>>($"User");
     }
 }

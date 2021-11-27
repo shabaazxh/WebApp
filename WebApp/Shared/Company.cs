@@ -10,8 +10,14 @@ namespace WebApp.Shared
 {
     public class Company
     {
+        [Key]
         public Guid CompanyId { get; set; }
+
         [Required]
         public string CompanyName { get; set; }
+
+        public DateTime JoinDate { get; set; }
+
+        public List<Project> WorkingOnProject { get; set; }
     }
 }

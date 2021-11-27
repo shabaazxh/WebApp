@@ -1,0 +1,52 @@
+@using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+
+@page "/projects"
+
+@attribute [AllowAnonymous]
+@inject HttpClient http
+@inject NavigationManager Navigation
+
+
+<h3> Projects (@all_projects.Count())</h3>
+
+
+<ul class="list-group">
+    <a href="projects/create"> Create ticket</a>
+    @if (all_projects != null)
+    {
+        @foreach (var proj in all_projects)
+        {
+            <li class="list-group-item">
+                <p> @proj.ProjectName </p>
+                <p> @proj.ProjectDescription </p>
+                <a href="projects/edit/@proj.ProjectId"> Edit</a>
+                <a href="projects/delete/@proj.ProjectId"> Delete</a>
+            </li>
+        }
+    }
+    else
+    {
+        <p> The value is null</p>
+    }
+</ul>
+
+@code {
+
+    private List<Project> all_projects = new List<Project>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            all_projects = await http.GetFromJsonAsync<List<Project>>("Projects");
+
+        } catch (Exception e)
+        {
+
+        }
+
+
+    }
+}

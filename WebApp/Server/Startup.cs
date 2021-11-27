@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
+using System.Security.Claims;
 using WebApp.Server.Data;
 using WebApp.Server.Models;
 
@@ -43,6 +45,9 @@ namespace WebApp.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.Configure<IdentityOptions>(options =>
+            options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

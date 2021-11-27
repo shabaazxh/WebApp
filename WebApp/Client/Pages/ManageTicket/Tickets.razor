@@ -1,0 +1,62 @@
+@using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+
+@page "/Tickets"
+
+@attribute [AllowAnonymous]
+@inject HttpClient http;
+@inject WebApp.Client.Services.ITodoItemService todoItemService
+@inject NavigationManager Navigation;
+@inject AuthenticationStateProvider authStateProvider
+
+<AuthorizeView>
+
+    <Authorized>
+        <p> You're here!!!' @context.User.Identity.Name</p>
+        <p> </p>
+    </Authorized>
+</AuthorizeView>
+
+<h3> Tickets (@TicketItems.Count())</h3>
+
+<ul class="list-group">
+    <a href="ManageTicket/create"> Create ticket</a>
+    @if (TicketItems != null)
+    {
+        @foreach (var Ticket in TicketItems)
+        {
+            <li class="list-group-item">
+                @Ticket.Title
+                <input type="checkbox" @bind="@Ticket.isDone" />
+@*                <p> Assigned to: @Ticket.owningUser.Username </p>*@
+                <a href="ManageTicket/edit/@Ticket.Id"> Edit</a>
+                <a href="ManageTicket/delete/@Ticket.Id"> Delete</a>
+            </li>
+        }
+    }
+    else
+    {
+        <p> The value is null</p>
+    }
+</ul>
+
+@code {
+
+    private List<Ticket> TicketItems { get; set; } = new List<Ticket>();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var user = (await authStateProvider.GetAuthenticationStateAsync()).User;
+        var userId = user.FindFirst(c => c.Type.Contains("pog2@gmail.com"))?.Value;
+        TicketItems = await http.GetFromJsonAsync<List<Ticket>>($"TodoItems");
+
+    }
+
+    private void EditButton()
+    {
+        Navigation.NavigateTo("/ManageTicket/edit");
+    }
+}

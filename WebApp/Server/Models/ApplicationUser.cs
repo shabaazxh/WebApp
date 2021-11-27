@@ -8,5 +8,6 @@ namespace WebApp.Server.Models
 {
     public class ApplicationUser : IdentityUser
     {
+
     }
 }

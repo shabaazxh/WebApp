@@ -1,0 +1,70 @@
+@using Microsoft.AspNetCore.Components.Authorization;
+@using WebApp.Shared;
+
+@page "/ManageTicket/create"
+
+@inject WebApp.Client.Services.ITodoItemService todoItemService
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+
+<h3> Todo create </h3>
+
+<EditForm Model="@ticketItem" OnValidSubmit="CreateNewTodoItem">
+
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label class="custom-control-label"> Name</label>
+        <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
+        <ValidationMessage For="@(() => ticketItem.Title)" />
+
+    </div>
+
+    <div class="form-group">
+        <label class="custom-control-label"> Assign User: </label>
+
+        <InputText id="title" @bind-Value="@ticketItem.owningUser.Username" class="form-control" aria-label="Disabled input example" />
+        
+@*        <input class="form-control" type="text" value="@ticketItem.owningUser.Username" aria-label="Disabled input example" disabled readonly>
+*@    </div>
+    @*<label class="custom-control-label">@ticketItem.owningUser.Username</label>*@
+
+    <button type="submit" class="btn btn-primary">
+
+        <i class="fas fa-save"></i>Create
+    </button>
+
+    <ValidationSummary />
+</EditForm>
+
+
+
+@code {
+
+    private Ticket ticketItem { get; set; } = new Ticket();
+    private User userSet { get; set; } = new User();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ticketItem.owningUser = userSet;
+@*      var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        var user = authstate.User;
+        var name = user.Identity.Name;
+        ticketItem.owningUser.Username = name;*@
+    }
+
+
+    public async Task CreateNewTodoItem()
+    {
+        //var result = todoItemService.CreateNewToDoItem(ticketItem);
+
+        var result = await Http.PostAsJsonAsync("TodoItems", ticketItem);
+
+        if (result.IsSuccessStatusCode)
+            Navigation.NavigateTo($"/tickets");
+        else
+            ticketItem.owningUser.Username = "Failed to find user";
+    }
+}

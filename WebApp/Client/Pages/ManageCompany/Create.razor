@@ -1,0 +1,51 @@
+@using Microsoft.AspNetCore.Components.Authorization;
+@using WebApp.Shared;
+@using Newtonsoft.Json;
+
+@page "/company/create"
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3> Project create </h3>
+
+<EditForm Model="companyItem" OnValidSubmit="CreateNewCompany">
+
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label class="custom-control-label"> Name </label>
+        <InputText id="title" @bind-Value="companyItem.CompanyName" class="form-control" />
+        <ValidationMessage For="@(() => companyItem.CompanyName)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+
+        <i class="fas fa-save"></i>Create
+    </button>
+    <ValidationSummary />
+</EditForm>
+
+
+
+@code {
+
+    private Company companyItem { get; set; } = new Company();
+
+    private async void CreateNewCompany()
+    {
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("Companies", companyItem);
+
+            var content = await response.Content.ReadAsStringAsync();
+            var companyobject = JsonConvert.DeserializeObject<Company>(content);
+            Navigation.NavigateTo($"/company");
+
+        } catch (Exception e)
+            {
+
+            }
+    }
+}

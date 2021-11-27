@@ -1,0 +1,50 @@
+@using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+
+@page "/company"
+
+@attribute [AllowAnonymous]
+@inject HttpClient http
+@inject NavigationManager Navigation
+
+
+<h3> Company (@all_Companies.Count())</h3>
+
+
+<ul class="list-group">
+    <a href="company/create"> Create Company</a>
+    @if (all_Companies != null)
+    {
+        @foreach (var comp in all_Companies)
+        {
+            <li class="list-group-item">
+                <p> @comp.CompanyId </p>
+                <p> @comp.CompanyName </p>
+                <a href="company/edit/@comp.CompanyId"> Edit</a>
+                <a href="company/delete/@comp.CompanyId"> Delete</a>
+            </li>
+        }
+    }
+    else
+    {
+        <p> The value is null</p>
+    }
+</ul>
+
+@code {
+
+    private List<Company> all_Companies = new List<Company>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            all_Companies = await http.GetFromJsonAsync<List<Company>>("Companies");
+
+        } catch (Exception e)
+        {
+
+        }
+    }
+}

@@ -1,0 +1,63 @@
+@using Microsoft.AspNetCore.Components.Authorization;
+@using WebApp.Shared;
+
+@page "/company/edit/{id:guid}"
+
+@inject HttpClient Http;
+@inject NavigationManager Navigation;
+
+<h3> Edit Company </h3>
+
+
+@if (companyItem == null)
+{
+    <span> Getting the Company item to edit</span>
+}
+else
+{
+    <EditForm Model="@companyItem" OnValidSubmit="@SubmitChanges">
+
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label class="custom-control-label"> Name</label>
+            <InputText id="title" @bind-Value="companyItem.CompanyName" class="form-control" />
+            <ValidationMessage For="@(() => companyItem.CompanyName)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+
+            <i class="fas fa-save"></i>Save Changes
+        </button>
+        <ValidationSummary />
+    </EditForm>
+}
+
+
+@code {
+
+    [Parameter] public Guid Id {get; set;}
+    private Company companyItem { get; set; } = new Company();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            companyItem = await Http.GetFromJsonAsync<Company>($"Companies/{Id}");
+        } catch (Exception e) {
+
+        }
+    }
+
+    private async void SubmitChanges()
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync<Company>($"Companies/{companyItem.CompanyId}", companyItem);
+            response.EnsureSuccessStatusCode();
+            Navigation.NavigateTo("/company");
+        } catch (Exception e)
+        {
+
+        }
+    }
+}
