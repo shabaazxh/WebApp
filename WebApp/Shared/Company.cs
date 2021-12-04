@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 
@@ -18,6 +18,6 @@ namespace WebApp.Shared
 
         public DateTime JoinDate { get; set; }
 
-        public List<Project> WorkingOnProject { get; set; }
+        public ICollection<Project> WorkingOnProject { get; set; }
     }
 }

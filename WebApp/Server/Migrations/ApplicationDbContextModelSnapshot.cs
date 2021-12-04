@@ -19,6 +19,21 @@ namespace WebApp.Server.Migrations
                 .HasAnnotation("ProductVersion", "5.0.12")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("ApplicationUserProject", b =>
+                {
+                    b.Property<string>("AssignedUsersToProjectId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("ProjectsProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AssignedUsersToProjectId", "ProjectsProjectId");
+
+                    b.HasIndex("ProjectsProjectId");
+
+                    b.ToTable("ApplicationUserProject");
+                });
+
             modelBuilder.Entity("IdentityServer4.EntityFramework.Entities.DeviceFlowCodes", b =>
                 {
                     b.Property<string>("UserCode")
@@ -257,22 +272,7 @@ namespace WebApp.Server.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("ProjectUser", b =>
-                {
-                    b.Property<Guid>("UsersUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("projectsProjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("UsersUserId", "projectsProjectId");
-
-                    b.HasIndex("projectsProjectId");
-
-                    b.ToTable("ProjectUser");
-                });
-
-            modelBuilder.Entity("WebApp.Server.Models.ApplicationUser", b =>
+            modelBuilder.Entity("WebApp.Shared.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -290,6 +290,9 @@ namespace WebApp.Server.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastAccessed")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -323,6 +326,12 @@ namespace WebApp.Server.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("firstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("lastName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -374,12 +383,18 @@ namespace WebApp.Server.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("assignedCompanyForProjectCompanyId")
+                    b.Property<Guid>("companyID")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("currentProgress")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("isComplete")
+                        .HasColumnType("bit");
 
                     b.HasKey("ProjectId");
 
-                    b.HasIndex("assignedCompanyForProjectCompanyId");
+                    b.HasIndex("companyID");
 
                     b.ToTable("Projects");
                 });
@@ -390,6 +405,9 @@ namespace WebApp.Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AssignedUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
@@ -397,38 +415,35 @@ namespace WebApp.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("isDone")
                         .HasColumnType("bit");
-
-                    b.Property<Guid?>("owningUserUserId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ticketType")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("owningUserUserId");
+                    b.HasIndex("AssignedUserId");
 
                     b.ToTable("Tickets");
                 });
 
-            modelBuilder.Entity("WebApp.Shared.User", b =>
+            modelBuilder.Entity("ApplicationUserProject", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.HasOne("WebApp.Shared.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AssignedUsersToProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
+                    b.HasOne("WebApp.Shared.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectsProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -442,7 +457,7 @@ namespace WebApp.Server.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("WebApp.Server.Models.ApplicationUser", null)
+                    b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -451,7 +466,7 @@ namespace WebApp.Server.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("WebApp.Server.Models.ApplicationUser", null)
+                    b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -466,7 +481,7 @@ namespace WebApp.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApp.Server.Models.ApplicationUser", null)
+                    b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -475,24 +490,9 @@ namespace WebApp.Server.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("WebApp.Server.Models.ApplicationUser", null)
+                    b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ProjectUser", b =>
-                {
-                    b.HasOne("WebApp.Shared.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("WebApp.Shared.Project", null)
-                        .WithMany()
-                        .HasForeignKey("projectsProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -501,28 +501,25 @@ namespace WebApp.Server.Migrations
                 {
                     b.HasOne("WebApp.Shared.Company", "assignedCompanyForProject")
                         .WithMany("WorkingOnProject")
-                        .HasForeignKey("assignedCompanyForProjectCompanyId");
+                        .HasForeignKey("companyID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("assignedCompanyForProject");
                 });
 
             modelBuilder.Entity("WebApp.Shared.Ticket", b =>
                 {
-                    b.HasOne("WebApp.Shared.User", "owningUser")
-                        .WithMany("assignedTickets")
-                        .HasForeignKey("owningUserUserId");
+                    b.HasOne("WebApp.Shared.ApplicationUser", "AssignedUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId");
 
-                    b.Navigation("owningUser");
+                    b.Navigation("AssignedUser");
                 });
 
             modelBuilder.Entity("WebApp.Shared.Company", b =>
                 {
                     b.Navigation("WorkingOnProject");
-                });
-
-            modelBuilder.Entity("WebApp.Shared.User", b =>
-                {
-                    b.Navigation("assignedTickets");
                 });
 #pragma warning restore 612, 618
         }

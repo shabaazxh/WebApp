@@ -1,6 +1,9 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
 @using Newtonsoft.Json;
+@using System.Security.Claims;
+
+@inject AuthenticationStateProvider ASP
 
 @page "/projects/create"
 
@@ -9,22 +12,75 @@
 
 <h3> Project create </h3>
 
-<EditForm Model="projectItem" OnValidSubmit="CreateNewProject">
+<EditForm Model="@AssignUser" OnValidSubmit="@AddUserToProject">
 
     <DataAnnotationsValidator />
+    <div class="form-group">
+        <label class="custom-control-label"> Assign Users </label>
+        <InputText placeholder="Username" id="inlineFormInputGroup" type="email" @bind-Value="@AssignUser.UserName" class="form-control" />
+
+        <button type="submit" class="btn btn-success">Add</button>
+    </div>
+</EditForm>
+
+<EditForm Model="@designatedCompany" OnValidSubmit="@AddCompany">
+
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label class="custom-control-label"> Assign Company </label>
+        <InputText placeholder="Company Name" id="inlineFormInputGroup" @bind-Value="designatedCompany.CompanyName" class="form-control" />
+
+        <button type="submit" class="btn btn-success">Add</button>
+    </div>
+</EditForm>
+
+
+@if (projectItem.assignedCompanyForProject != null)
+{
+    <p> Company: @projectItem.assignedCompanyForProject.CompanyName </p>
+}
+else
+{
+    <p> @designatedCompany.CompanyName </p>
+}
+
+
+<p> Currently assigned users </p>
+@if (ListOfAllUsers.Count() == 0)
+{
+    <p> No users assigned yet</p>
+}
+else
+{
+    @for (int i = 0; i < ListOfAllUsers.Count(); i++)
+    {
+        var localVar = i;
+        <li>
+            @ListOfAllUsers[i].UserName
+            <button type="submit" @onclick="(() => RemoveUser(ListOfAllUsers[localVar].UserName))" class="btn btn-danger">-</button>
+        </li>
+    }
+}
+
+<EditForm Model="@projectItem" OnValidSubmit="@CreateNewProject">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
     <div class="form-group">
         <label class="custom-control-label"> Name </label>
         <InputText id="title" @bind-Value="projectItem.ProjectName" class="form-control" />
         <InputText id="title" @bind-Value="projectItem.ProjectDescription" class="form-control" />
+        <input type="date" @bind-value="projectItem.StartDate" class="form-control" />
+        <input type="date" @bind-value="projectItem.EndDate" class="form-control" />
+
         <ValidationMessage For="@(() => projectItem.ProjectName)" />
+
+        <button type="submit" class="btn btn-primary">Create Project</button>
+
     </div>
 
-    <button type="submit" class="btn btn-primary">
 
-        <i class="fas fa-save"></i>Create
-    </button>
-    <ValidationSummary />
 </EditForm>
 
 
@@ -32,9 +88,20 @@
 @code {
 
     private Project projectItem { get; set; } = new Project();
+    private ApplicationUser AssignUser { get; set; } 
+    private List<ApplicationUser> ListOfAllUsers { get; set; } = new List<ApplicationUser>();
+    private Company designatedCompany { get; set; } = new Company();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        AssignUser = new ApplicationUser();
+        AssignUser.UserName = "Type username to add a user to project";
+    }
 
+    // create the project
     private async void CreateNewProject()
     {
+        projectItem.AssignedUsersToProject = ListOfAllUsers;
 
         try
         {
@@ -42,11 +109,82 @@
 
             var content = await response.Content.ReadAsStringAsync();
             var project = JsonConvert.DeserializeObject<Project>(content);
-            Navigation.NavigateTo($"/projects");
+            response.EnsureSuccessStatusCode();
 
-        } catch (Exception e)
-            {
-
+            if (response.IsSuccessStatusCode) {
+                Navigation.NavigateTo($"/projects");
             }
+
+        }
+        catch (Exception e)
+        {
+
+        }
     }
+
+    // Add a user to the project
+    private async void AddUserToProject()
+    {
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync($"Projects/{AssignUser.UserName}", AssignUser);
+            var content = await response.Content.ReadAsStringAsync();
+            var userobject = JsonConvert.DeserializeObject<ApplicationUser>(content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (!ListOfAllUsers.Any(n => n.UserName.Equals(userobject.UserName)))
+                {
+                    ListOfAllUsers.Add(userobject);
+                }
+                else
+                {
+                    AssignUser.UserName = "This user is already added to the project.";
+                }
+            }
+            else if (!response.IsSuccessStatusCode)
+            {
+                AssignUser.UserName = "User not found, try again";
+            }
+
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    private async void AddCompany()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync($"Companies/{designatedCompany.CompanyName}", designatedCompany);
+            var content = await response.Content.ReadAsStringAsync();
+            var companyObject = JsonConvert.DeserializeObject<Company>(content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                projectItem.assignedCompanyForProject = companyObject;
+            }
+            else
+            {
+                designatedCompany.CompanyName = "Company not found. Try again.";
+            }
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    // Remove user from the project
+    private void RemoveUser(string username)
+    {
+
+        var user = ListOfAllUsers.Find(n => n.UserName.Equals(username));
+
+        ListOfAllUsers.Remove(user);
+    }
+
 }

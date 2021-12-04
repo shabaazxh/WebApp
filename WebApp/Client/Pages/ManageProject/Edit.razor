@@ -1,10 +1,14 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
+@using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Authorization;
 
 @page "/projects/edit/{id:guid}"
 
-@inject HttpClient Http;
-@inject NavigationManager Navigation;
+@attribute [Authorize(Roles = "Admin")]
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
 
 <h3> Edit Project </h3>
 
@@ -23,7 +27,27 @@ else
             <label class="custom-control-label"> Name</label>
             <InputText id="title" @bind-Value="projectItem.ProjectName" class="form-control" />
             <InputText id="title" @bind-Value="projectItem.ProjectDescription" class="form-control" />
+
+            <label class="custom-control-label"> Progress </label>
+            <InputNumber @bind-Value="projectItem.currentProgress" class="form-control" />
+            <input type="date" @bind-value="projectItem.StartDate" class="form-control" />
+            <input type="date" @bind-value="projectItem.EndDate" class="form-control" />
             <ValidationMessage For="@(() => projectItem.ProjectName)" />
+        </div>
+
+        <div class="form-check">
+            @if (projectItem.isComplete == true)
+            {
+                <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="projectItem.isComplete" checked>
+            }
+            else
+            {
+                <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="projectItem.isComplete">
+            }
+
+            <label class="form-check-label" for="flexCheckDefault">
+                Complete @projectItem.isComplete
+            </label>
         </div>
 
         <button type="submit" class="btn btn-primary">
@@ -34,17 +58,76 @@ else
     </EditForm>
 }
 
+<EditForm Model="@designatedCompany" OnValidSubmit="@AddCompany">
+
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label class="custom-control-label">
+            Change company: @if (projectItem.assignedCompanyForProject != null)
+            {
+                @projectItem.assignedCompanyForProject.CompanyName
+            }
+            else
+            {
+                <p>Could not find company</p>
+            }
+        </label>
+        <InputText placeholder="Company name" id="inlineFormInputGroup" @bind-Value="designatedCompany.CompanyName" class="form-control" />
+        <button type="submit" class="btn btn-primary">Change</button>
+    </div>
+
+
+</EditForm>
+
+<p> Assigned users </p>
+@if (projectItem.AssignedUsersToProject == null)
+{
+    <p> No users assigned yet</p>
+}
+else
+{
+    @for (int i = 0; i < projectItem.AssignedUsersToProject.Count(); i++)
+    {
+        var localVar = i;
+        <li>
+            @projectItem.AssignedUsersToProject.ElementAt(i).UserName
+            <button type="submit" @onclick="(() => RemoveUser(projectItem.AssignedUsersToProject.ElementAt(localVar).UserName))" class="btn btn-danger">-</button>
+        </li>
+    }
+}
+
+<EditForm Model="@AssignUser" OnValidSubmit="@AddUserToProject">
+
+@*    <DataAnnotationsValidator />*@
+    <div class="form-group">
+        <label class="custom-control-label"> Assign Users </label>
+        <InputText placeholder="Username" id="inlineFormInputGroup" type="email" @bind-Value="@AssignUser.UserName" class="form-control" />
+
+        <button type="submit" class="btn btn-success">Add</button>
+    </div>
+</EditForm>
+
 
 @code {
 
-    [Parameter] public Guid Id {get; set;}
+    [Parameter] public Guid Id { get; set; }
     private Project projectItem { get; set; } = new Project();
+    private Company designatedCompany { get; set; } = new Company();
+    private List<ApplicationUser> UsersOnProject { get; set; } = new List<ApplicationUser>();
+    private ApplicationUser AssignUser { get; set; } = new ApplicationUser();
 
+    string removeUsername { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        try {
+        try
+        {
             projectItem = await Http.GetFromJsonAsync<Project>($"Projects/{Id}");
-        } catch (Exception e) {
+
+            projectItem.assignedCompanyForProject = await Http.GetFromJsonAsync<Company>($"Projects/{Id}/CompanyProject");
+        }
+        catch (Exception e)
+        {
 
         }
     }
@@ -54,11 +137,86 @@ else
         try
         {
             var response = await Http.PutAsJsonAsync<Project>($"Projects/{projectItem.ProjectId}", projectItem);
+            //var response = await Http.PutAsJsonAsync<Project>($"Projects/removeUser/{removeUsername}/{projectItem.ProjectId}", projectItem);
             response.EnsureSuccessStatusCode();
             Navigation.NavigateTo("/projects");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }
+    }
+
+    private async void AddCompany()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync($"Companies/{designatedCompany.CompanyName}", designatedCompany);
+            var content = await response.Content.ReadAsStringAsync();
+            var companyObject = JsonConvert.DeserializeObject<Company>(content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                projectItem.assignedCompanyForProject = companyObject;
+                projectItem.companyID = companyObject.CompanyId;
+            }
+            else
+            {
+                designatedCompany.CompanyName = "Company not found, try again";
+            }
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    // Add a user to the project
+    private async void AddUserToProject()
+    {
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"Projects/add/User/{AssignUser.UserName}/{projectItem.ProjectId}", AssignUser);
+            var content = await response.Content.ReadAsStringAsync();
+            var userobject = JsonConvert.DeserializeObject<ApplicationUser>(content);
+            response.EnsureSuccessStatusCode();
+
+            if(response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/projects");
+
+            }
+
+
+            if (!response.IsSuccessStatusCode)
+            {
+                AssignUser.UserName = "User not found, try again";
+            }
+
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    private async void RemoveUser(string username)
+    {
+        removeUsername = username;
+        var user = projectItem.AssignedUsersToProject.First(n => n.UserName.Equals(username));
+
+        projectItem.AssignedUsersToProject.Remove(user);
+        try
+        {
+            //var response = await Http.PutAsJsonAsync<Project>($"Projects/{projectItem.ProjectId}", projectItem);
+            var response = await Http.PutAsJsonAsync<Project>($"Projects/removeUser/{removeUsername}/{projectItem.ProjectId}", projectItem);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception e)
+        {
+
+        }
+
     }
 }

@@ -1,41 +1,38 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
+@using Newtonsoft.Json;
 
-@page "/ManageTicket/create"
-
-@inject WebApp.Client.Services.ITodoItemService todoItemService
+@page "/tickets/create"
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
-@inject AuthenticationStateProvider GetAuthenticationStateAsync
 
-<h3> Todo create </h3>
+<h3> Project create </h3>
 
-<EditForm Model="@ticketItem" OnValidSubmit="CreateNewTodoItem">
+<EditForm Model="ticketItem" OnValidSubmit="CreateNewTicket">
 
     <DataAnnotationsValidator />
 
     <div class="form-group">
-        <label class="custom-control-label"> Name</label>
+        <label class="custom-control-label"> Name </label>
         <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
+        <label class="custom-control-label"> Assign user </label>
+        <InputText id="title" @bind-Value="ticketItem.AssignedUser.UserName" class="form-control" />
+
+        <label class="mr-sm-2" for="inlineFormCustomSelect">Ticket type</label>
+        <InputSelect @bind-Value="ticketItem.ticketType" class="custom-select mr-sm-2" id="inlineFormCustomSelect">Choose...
+            <option value="0">Todo Ticket</option>
+            <option value="1">Bug Ticket</option>
+            <option value="2">Support Ticket</option>
+        </InputSelect>
+
         <ValidationMessage For="@(() => ticketItem.Title)" />
-
     </div>
-
-    <div class="form-group">
-        <label class="custom-control-label"> Assign User: </label>
-
-        <InputText id="title" @bind-Value="@ticketItem.owningUser.Username" class="form-control" aria-label="Disabled input example" />
-        
-@*        <input class="form-control" type="text" value="@ticketItem.owningUser.Username" aria-label="Disabled input example" disabled readonly>
-*@    </div>
-    @*<label class="custom-control-label">@ticketItem.owningUser.Username</label>*@
 
     <button type="submit" class="btn btn-primary">
 
         <i class="fas fa-save"></i>Create
     </button>
-
     <ValidationSummary />
 </EditForm>
 
@@ -44,27 +41,31 @@
 @code {
 
     private Ticket ticketItem { get; set; } = new Ticket();
-    private User userSet { get; set; } = new User();
 
     protected override async Task OnInitializedAsync()
     {
-        ticketItem.owningUser = userSet;
-@*      var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
-        var user = authstate.User;
-        var name = user.Identity.Name;
-        ticketItem.owningUser.Username = name;*@
+        ticketItem.AssignedUser = new ApplicationUser();
+        ticketItem.AssignedUser.UserName = "Type username here";
     }
 
-
-    public async Task CreateNewTodoItem()
+    private async void CreateNewTicket()
     {
-        //var result = todoItemService.CreateNewToDoItem(ticketItem);
 
-        var result = await Http.PostAsJsonAsync("TodoItems", ticketItem);
+        try
+        {
+            var response = await Http.PostAsJsonAsync("Tickets", ticketItem);
+            var content = await response.Content.ReadAsStringAsync();
+            var ticket = JsonConvert.DeserializeObject<Ticket>(content);
 
-        if (result.IsSuccessStatusCode)
-            Navigation.NavigateTo($"/tickets");
-        else
-            ticketItem.owningUser.Username = "Failed to find user";
+            if (response.IsSuccessStatusCode)
+                Navigation.NavigateTo($"/tickets");
+
+            else if(!response.IsSuccessStatusCode)
+                ticketItem.AssignedUser.UserName = "Failed to find user, try again";
+
+        } catch (Exception e)
+        {
+
+        }
     }
 }

@@ -21,11 +21,30 @@ namespace WebApp.Server.Controllers
             _context = context;
         }
 
-        // GET: api/Companies
+        // GET: Companies: Returns the company and the projects the company is working on
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
-            return await _context.Companies.ToListAsync();
+            var companies = _context.Companies.ToList();
+
+            // for each company find its projects
+            foreach(var company in companies)
+            {
+                var query = _context.Projects.Where(p => p.companyID.ToString().Equals(company.CompanyId.ToString())); // match project company id to current company id
+                List<Project> companyProjects = new List<Project>(); 
+                
+                // --- This is done to prevent the JSON cylic error --- 
+                // loop through the projects from query, extract information and add to list
+                foreach(var project in query.ToList())
+                {
+                    Project x = new Project { ProjectId = project.ProjectId, ProjectName = project.ProjectName, ProjectDescription = project.ProjectDescription };
+                    companyProjects.Add(x);
+                }
+
+                company.WorkingOnProject = companyProjects;
+            }
+
+            return companies;
         }
 
         // GET: api/Companies/5
@@ -82,6 +101,25 @@ namespace WebApp.Server.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetCompany", new { id = company.CompanyId }, company);
+        }
+
+        // Find company and add it to a project 
+        [HttpPost("{companyName}")]
+        public async Task<ActionResult<Company>> AddCompanyToProject(string companyName)
+        {
+            try
+            {
+                // find company
+                Company foundCompany = await _context.Companies.Where(c => c.CompanyName.Equals(companyName)).FirstAsync();
+
+                // return company if found
+                return foundCompany;
+            }
+            catch (InvalidOperationException)
+            {
+                // if not found, return bad request 
+                return BadRequest();
+            }
         }
 
         // DELETE: api/Companies/5

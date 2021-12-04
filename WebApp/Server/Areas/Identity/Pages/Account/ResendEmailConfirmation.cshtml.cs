@@ -10,8 +10,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using WebApp.Server.Models;
-
+using WebApp.Shared;
 namespace WebApp.Server.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]

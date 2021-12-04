@@ -1,0 +1,76 @@
+@using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@using Newtonsoft.Json;
+
+@inject AuthenticationStateProvider ASP
+
+@page "/account"
+
+@attribute [AllowAnonymous]
+@inject HttpClient http
+@inject NavigationManager Navigation
+
+
+<h3> Account profile </h3>
+
+<AuthorizeView>
+    <Authorized>
+        @if (@CurrentUser != null)
+        {
+        <h1> Users: @CurrentUser</h1>
+        <ul class="list-group">
+
+            <li class="list-group-item">
+                <p>UserID: @CurrentUser.Id</p>
+                <p>UserEmail: @CurrentUser.UserName</p>
+                <p>Last logged in: @CurrentUser.LastAccessed</p>
+                @if (@UserTicks.Count() == 0)
+                {
+                <p> No tickets </p>
+                }
+                else
+                {
+                <p>Tickets assigned to you: @UserTicks.Count()</p>
+                }
+
+            </li>
+        </ul>
+        }
+        else
+        {
+        <p> The value is null</p>
+
+        }
+        <button type="submit" class="btn btn-danger" @onclick="DeleteUser">
+
+            <i class="fas fa-save"></i>Deactivate
+        </button>
+
+    </Authorized>
+
+</AuthorizeView>
+
+        @code {
+
+            private ApplicationUser CurrentUser { get; set; } = new ApplicationUser();
+            private List<Ticket> UserTicks { get; set; } = new List<Ticket>();
+
+            protected override async Task OnInitializedAsync()
+            {
+
+                var user = (await ASP.GetAuthenticationStateAsync()).User;
+
+                var UserStringId = user.FindFirst(c => c.Type == "sub")?.Value;
+
+                if (UserStringId != "" || UserStringId != null)
+                    CurrentUser = await http.GetFromJsonAsync<ApplicationUser>($"User/{UserStringId}");
+                    UserTicks = await http.GetFromJsonAsync<List<Ticket>>($"User/{UserStringId}/UsersTickets");
+            }
+
+            private async void DeleteUser()
+            {
+                var response = await http.PutAsJsonAsync<ApplicationUser>($"User/delete/user/{CurrentUser.Id}", CurrentUser);
+
+            }
+
+        }

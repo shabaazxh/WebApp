@@ -1,0 +1,122 @@
+@using Microsoft.AspNetCore.Components.Authorization;
+@using WebApp.Shared;
+@using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Authorization;
+
+@page "/projects/report/{id:guid}"
+
+@attribute [Authorize]
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3> Report for project: @projectItem.ProjectName </h3>
+
+
+@if (projectItem == null)
+{
+    <span> Getting the projectItem item to edit</span>
+}
+else
+{
+    <label> <strong>Project name</strong> </label>
+    <p> @projectItem.ProjectName </p>
+    <label> Project description </label>
+    <p> @projectItem.ProjectDescription </p>
+
+    <label> Start Date</label>
+    <p> @projectItem.StartDate </p>
+    <label> End Date</label>
+    <p> @projectItem.EndDate </p>
+
+    <label> Company</label>
+    <p>
+        @if (projectItem.assignedCompanyForProject != null)
+        {
+            @projectItem.assignedCompanyForProject.CompanyName
+        }
+        else
+        {
+        <p>Could not find company</p>
+    }
+        </p>
+
+        <label> <strong>Users on project</strong></label>
+        @if (projectItem.AssignedUsersToProject == null)
+        {
+            <p>Users is coming through as null</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var x in projectItem.AssignedUsersToProject)
+                {
+                    <p> @x.UserName </p>
+                }
+            </ul>
+        }
+
+        <label> <strong>Active Users</strong></label>
+        @if (projectItem.AssignedUsersToProject == null)
+        {
+            <p>Users is coming through as null</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var x in projectItem.AssignedUsersToProject)
+                {
+                    DateTime today = DateTime.Now;
+                    TimeSpan diff = today.Subtract(x.LastAccessed);
+                    if (today.Subtract(x.LastAccessed).Days < 3)
+                    {
+                        <p>Active: @x.UserName</p>
+                    } 
+                }
+            </ul>
+        }
+
+        <label> Progress </label>
+        @if (projectItem.isComplete == true)
+        {
+            <div class="progress">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">Complete</div>
+            </div>
+        }
+        else
+        {
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @projectItem.currentProgress%;" aria-valuenow="@projectItem.currentProgress" aria-valuemin="0" aria-valuemax="100">@projectItem.currentProgress</div>
+            </div>
+        }
+
+
+        <button type="submit" class="btn btn-primary" @onclick="BackButton">Back </button>
+    }
+
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    private Project projectItem { get; set; } = new Project();
+    private Company designatedCompany { get; set; } = new Company();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            projectItem = await Http.GetFromJsonAsync<Project>($"Projects/{Id}");
+
+            projectItem.assignedCompanyForProject = await Http.GetFromJsonAsync<Company>($"Projects/{Id}/CompanyProject");
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+
+    private void BackButton()
+    {
+        Navigation.NavigateTo("/projects");
+    }
+}

@@ -1,66 +1,63 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
-@page "/ManageTicket/edit/{id:guid}"
 
-@inject WebApp.Client.Services.ITodoItemService todoItemService
+@page "/tickets/edit/{id:guid}"
 
 @inject HttpClient Http;
 @inject NavigationManager Navigation;
 
-<h3> Edit item </h3>
+<h3> Edit Project </h3>
 
 
 @if (ticketItem == null)
 {
-    <span> Getting the todo item to edit</span>
+    <span> Getting the ticket item to edit</span>
 }
 else
 {
-<EditForm Model="@ticketItem" OnValidSubmit="@SubmitChanges">
+    <EditForm Model="@ticketItem" OnValidSubmit="@SubmitChanges">
 
-    <DataAnnotationsValidator />
+        <DataAnnotationsValidator />
 
-    <div class="form-group">
-        <label class="custom-control-label"> Name</label>
-        <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
-        <label class="custom-control-label"> Ticket belongs to: @ticketItem.owningUser.Username</label>
-        <ValidationMessage For="@(() => ticketItem.Title)" />
-    </div>
+        <div class="form-group">
+            <label class="custom-control-label"> Name</label>
+            <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
+            <ValidationMessage For="@(() => ticketItem.Title)" />
+        </div>
 
-    
+        <button type="submit" class="btn btn-primary">
 
-    <button type="submit" class="btn btn-primary">
-
-        <i class="fas fa-save"></i>Save Changes
-    </button>
-    <ValidationSummary />
-</EditForm>
+            <i class="fas fa-save"></i>Save Changes
+        </button>
+        <ValidationSummary />
+    </EditForm>
 }
 
 
 @code {
 
-    private Ticket ticketItem { get; set; }
-    private User associatedUser { get; set; }
+    [Parameter] public Guid Id {get; set;}
+    private Ticket ticketItem { get; set; } = new Ticket();
 
-    [Parameter]
-    public Guid Id { get; set; }
-
-    // change this to send http request to controller and not use a service
     protected override async Task OnInitializedAsync()
     {
+        try {
+            ticketItem = await Http.GetFromJsonAsync<Ticket>($"Tickets/{Id}");
+        } catch (Exception e) {
 
-        ticketItem = await Http.GetFromJsonAsync<Ticket>($"TodoItems/{Id}");
-        associatedUser = await Http.GetFromJsonAsync<User>($"User/{Id}");
-
-        ticketItem.owningUser = associatedUser;
+        }
     }
 
-    async Task SubmitChanges()
+    private async void SubmitChanges()
     {
-        var message = await Http.PutAsJsonAsync<Ticket>($"TodoItems/{Id}", ticketItem);
-        Navigation.NavigateTo("/tickets");
+        try
+        {
+            var response = await Http.PutAsJsonAsync<Ticket>($"Tickets/{ticketItem.Id}", ticketItem);
+            response.EnsureSuccessStatusCode();
+            Navigation.NavigateTo("/tickets");
+        } catch (Exception e)
+        {
 
+        }
     }
-
 }

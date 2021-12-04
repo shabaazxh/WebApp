@@ -6,9 +6,9 @@ using WebApp.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using WebApp.Server.Models;
 using System;
-using System.Data.Entity;
+using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApp.Server.Controllers
 {
@@ -18,54 +18,69 @@ namespace WebApp.Server.Controllers
 
     public class UserController : ControllerBase
     {
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext context;
         private readonly UserManager<ApplicationUser> userManager;
 
-        public UserController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public UserController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             this.context = context;
             this.userManager = userManager;
+            _signInManager = signInManager;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        // GET currently logged in user
+        [HttpGet("{findUserID}")]
+        public async Task<ActionResult<ApplicationUser>> GetCurrentUser(string findUserID)
         {
-            List<User> giveback = new List<User>();
-            List<Project> projects = new List<Project>();
-            
-            var result = userManager.Users.ToList();
+            var user = userManager.Users.First(x => x.Id.Equals(findUserID));
+            user.LastAccessed = DateTime.Now;
+            context.SaveChanges();
 
-            for(int i = 0; i < result.Count(); i++)
+            return user;
+        }
+
+        // Get currently logged in users tickets
+        [HttpGet("{userID}/UsersTickets")]
+        public async Task<ActionResult<IEnumerable<Ticket>>> GetUserTickets(string userID)
+        {
+            try { 
+                var findTickets = await context.Tickets.Where(t => t.UserID.ToString().Equals(userID)).ToListAsync();
+                return findTickets;
+            } catch(Exception)
             {
-                Project pro = new Project();
-                Ticket tick = new Ticket();
-                tick.Title = "Ticket " + i * 2;
-                tick.ticketType = TicketType.SupportTicket;
-                pro.ProjectName = "project: " + i;
+                return new List<Ticket>();
+            }
+            
+        }
 
-                User x = new User();
-                x.Username = result[i].Email;
-                x.projects = new List<Project>();
-                x.projects.Add(pro);
-                x.assignedTickets = new List<Ticket>();
-                
-                x.assignedTickets.Add(tick);
+        // Name of the user the ticket belongs to
+        [HttpGet("{ticketID}/UserForTicket")]
+        public async Task<ActionResult<ApplicationUser>> GetUserForTicket(Guid ticketID)
+        {
+            var ticketUser = context.Tickets.First(p => p.Id == ticketID);
+            var user = userManager.Users.First(x => x.Id.Equals(ticketUser.UserID.ToString()));
 
-                giveback.Add(x);
+            return new ApplicationUser { Id = user.Id, UserName = user.UserName };
+        }
+
+        [HttpPut("delete/user/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = userManager.Users.FirstOrDefault(u => u.Id.Equals(id));
+            var result = await userManager.DeleteAsync(user);
+
+            if (result.Succeeded)
+            {
+                await _signInManager.SignOutAsync();
+                return LocalRedirect("/");
+            } else
+            {
+                return BadRequest();
             }
 
-            return giveback;
-        }
-
-        [HttpGet("{ticketID}")]
-        public async Task<ActionResult<User>> GetUserForTicket(Guid ticketID)
-        {
-            var ticketUser = await context.Tickets.FindAsync(ticketID);
-
-            if(ticketUser.owningUser != null)
-                return ticketUser.owningUser;
-            else
-                return BadRequest("no owning user");
+            return NoContent();
         }
 
     }

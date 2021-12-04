@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApp.Server.Models;
 using WebApp.Shared;
 
 namespace WebApp.Server.Data
@@ -23,6 +22,13 @@ namespace WebApp.Server.Data
         public DbSet<Company> Companies { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Project> Projects { get; set; }
-        public DbSet<User> Users { get; set; }
+        public DbSet<ApplicationUser> AppUsers { get; set; }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
+
+
     }
+
 }

@@ -8,7 +8,7 @@
 @attribute [AllowAnonymous]
 @inject HttpClient http
 @inject NavigationManager Navigation
-
+@inject AuthenticationStateProvider ASP
 
 <h3> Projects (@all_projects.Count())</h3>
 
@@ -19,12 +19,53 @@
     {
         @foreach (var proj in all_projects)
         {
-            <li class="list-group-item">
-                <p> @proj.ProjectName </p>
-                <p> @proj.ProjectDescription </p>
-                <a href="projects/edit/@proj.ProjectId"> Edit</a>
-                <a href="projects/delete/@proj.ProjectId"> Delete</a>
-            </li>
+
+            <a href="projects/report/@proj.ProjectId" class="list-group-item list-group-item-action">
+                <p> Project: @proj.ProjectName </p>
+                <p> Description: @proj.ProjectDescription </p>
+                <p> Company: @proj.assignedCompanyForProject.CompanyName </p>
+                <p> Start date: @proj.StartDate.Date </p>
+                <p> End date: @proj.EndDate.Date </p>
+                @if (proj.isComplete == true)
+                {
+                    <p> Status: Complete </p>
+                }
+                else
+                {
+                    <p>Status: Incomplete </p>
+                }
+
+                @if (proj.AssignedUsersToProject == null)
+                {
+                    <p>Users is coming through as null</p>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var x in proj.AssignedUsersToProject)
+                        {
+                            <p> @x.UserName </p>
+                        }
+                    </ul>
+                }
+
+                <a href="projects/edit/@proj.ProjectId" class="badge badge-primary"> Edit</a>
+                <a href="projects/delete/@proj.ProjectId" class="badge badge-danger"> Delete</a>
+
+                @*Change progress bar based on project completion status*@
+                @if (proj.isComplete == true)
+                {
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">Complete</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @proj.currentProgress%;" aria-valuenow="@proj.currentProgress" aria-valuemin="0" aria-valuemax="100">@proj.currentProgress</div>
+                    </div>
+                }
+            </a>
         }
     }
     else
@@ -39,14 +80,28 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try {
-            all_projects = await http.GetFromJsonAsync<List<Project>>("Projects");
+        var user = (await ASP.GetAuthenticationStateAsync()).User;
+        var UserStringId = user.FindFirst(c => c.Type == "sub")?.Value;
 
-        } catch (Exception e)
+        try
+        {
+            all_projects = await http.GetFromJsonAsync<List<Project>>($"Projects/{UserStringId}/UserProjects");
+
+            foreach (var x in all_projects)
+            {
+                x.assignedCompanyForProject =
+                    await http.GetFromJsonAsync<Company>($"Projects/{x.ProjectId}/CompanyProject");
+            }
+
+        }
+        catch (Exception e)
         {
 
         }
+    }
 
+    private void changeCompletion(string value)
+    {
 
     }
 }

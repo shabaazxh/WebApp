@@ -2,38 +2,43 @@
 @using Microsoft.AspNetCore.Authorization;
 @using System.Net.Http;
 @using System.Net.Http.Json;
+@using Newtonsoft.Json;
+@inject AuthenticationStateProvider ASP
 
-@page "/Tickets"
+@page "/tickets"
 
-@attribute [AllowAnonymous]
-@inject HttpClient http;
-@inject WebApp.Client.Services.ITodoItemService todoItemService
-@inject NavigationManager Navigation;
-@inject AuthenticationStateProvider authStateProvider
+@attribute [Authorize]
+@inject HttpClient http
+@inject NavigationManager Navigation
 
-<AuthorizeView>
 
-    <Authorized>
-        <p> You're here!!!' @context.User.Identity.Name</p>
-        <p> </p>
-    </Authorized>
-</AuthorizeView>
+<h3> Tickets (@all_tickets.Count())</h3>
 
-<h3> Tickets (@TicketItems.Count())</h3>
+@if (all_tickets.Count() == 0)
+{
+    <p> There are currently no tickets </p>
+}
 
 <ul class="list-group">
-    <a href="ManageTicket/create"> Create ticket</a>
-    @if (TicketItems != null)
+    <a href="tickets/create"> Create Ticket</a>
+    @if (all_tickets != null)
     {
-        @foreach (var Ticket in TicketItems)
+        @foreach (var ticket in all_tickets)
         {
-            <li class="list-group-item">
-                @Ticket.Title
-                <input type="checkbox" @bind="@Ticket.isDone" />
-@*                <p> Assigned to: @Ticket.owningUser.Username </p>*@
-                <a href="ManageTicket/edit/@Ticket.Id"> Edit</a>
-                <a href="ManageTicket/delete/@Ticket.Id"> Delete</a>
-            </li>
+<li class="list-group-item">
+    <p> Title: @ticket.Title </p>
+    <p> Type: @ticket.ticketType</p>
+    @if (ticket.AssignedUser.UserName != null)
+    {
+        <p> Assigned user: @ticket.AssignedUser.UserName</p>
+    }
+    else
+    {
+        <p> Assigned user: User is deleted</p>
+    }
+    <a href="tickets/edit/@ticket.Id"> Edit</a>
+    <a href="tickets/delete/@ticket.Id"> Delete</a>
+</li>
         }
     }
     else
@@ -43,20 +48,27 @@
 </ul>
 
 @code {
-
-    private List<Ticket> TicketItems { get; set; } = new List<Ticket>();
+    private List<Ticket> all_tickets = new List<Ticket>();
 
     protected override async Task OnInitializedAsync()
     {
+        var user = (await ASP.GetAuthenticationStateAsync()).User;
+        var UserStringId = user.FindFirst(c => c.Type == "sub")?.Value;
 
-        var user = (await authStateProvider.GetAuthenticationStateAsync()).User;
-        var userId = user.FindFirst(c => c.Type.Contains("pog2@gmail.com"))?.Value;
-        TicketItems = await http.GetFromJsonAsync<List<Ticket>>($"TodoItems");
+        try
+        {
+            all_tickets = await http.GetFromJsonAsync<List<Ticket>>($"Tickets/{UserStringId}/UserTickets");
 
-    }
+            foreach (var x in all_tickets)
+            {
+                x.AssignedUser = await http.GetFromJsonAsync<ApplicationUser>($"User/{x.Id}/UserForTicket");
+            }
 
-    private void EditButton()
-    {
-        Navigation.NavigateTo("/ManageTicket/edit");
+        }
+        catch (Exception e)
+        {
+
+        }
+
     }
 }

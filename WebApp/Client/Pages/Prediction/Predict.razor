@@ -1,0 +1,58 @@
+@using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
+@using Newtonsoft.Json;
+
+@inject AuthenticationStateProvider ASP
+
+@page "/prediction"
+
+@attribute [AllowAnonymous]
+@inject HttpClient http
+@inject NavigationManager Navigation
+
+
+<h3> Prediction page </h3>
+
+<EditForm Model="selectedDate" OnValidSubmit="InitPrediction">
+
+    <div class="form-group">
+        <label for="formGroupExampleInput" class="form-label">Select a date for prediction</label>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="inputGroup-sizing-default">Default</span>
+            <input type="date" class="form-control" id="floatingInputValue" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" @bind-value="selectedDate">
+        </div>
+        <button type="submit" class="btn btn-primary">Start Prediction</button>
+    </div>
+
+    @if(predictedInfo.Count != 0) {
+        <h1>Prediction: </h1>
+        <p> Projects per company count: @predictedInfo["projects"] </p>
+        <p> Users per project count: @predictedInfo["users"] </p>
+    } else {
+        <p>Enter a date and press the button to begin a prediction</p>
+    }
+
+
+</EditForm>
+
+    @code {
+        [CascadingParameter]
+        private DateTime selectedDate { get; set; }
+        private int ProjectsPerCompany { get; set; }
+        private int usersPerProject { get; set; }
+        private bool triggerMes = true;
+
+        private Dictionary<string, int> predictedInfo = new Dictionary<string, int>();
+
+        private async Task InitPrediction()
+        {
+            predictedInfo = await http.GetFromJsonAsync<Dictionary<string, int>>($"Prediction/{selectedDate.ToString("dd - MM - yyyy")}");
+            Navigation.NavigateTo("/prediction");
+        }
+
+        private void setTriggerMess()
+        {
+            triggerMes = false;
+        }
+
+    }
