@@ -6,6 +6,7 @@
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider ASP
 
 <h3> Project create </h3>
 
@@ -20,7 +21,7 @@
         <InputText id="title" @bind-Value="ticketItem.AssignedUser.UserName" class="form-control" />
 
         <label class="mr-sm-2" for="inlineFormCustomSelect">Ticket type</label>
-        <InputSelect @bind-Value="ticketItem.ticketType" class="custom-select mr-sm-2" id="inlineFormCustomSelect">Choose...
+        <InputSelect @bind-Value="ticketItem.ticketType" class="custom-select mr-sm-2" id="inlineFormCustomSelect">
             <option value="0">Todo Ticket</option>
             <option value="1">Bug Ticket</option>
             <option value="2">Support Ticket</option>
@@ -50,20 +51,23 @@
 
     private async void CreateNewTicket()
     {
+        var user = (await ASP.GetAuthenticationStateAsync()).User;
+        var UserStringId = user.FindFirst(c => c.Type == "sub")?.Value;
 
         try
         {
-            var response = await Http.PostAsJsonAsync("Tickets", ticketItem);
+            var response = await Http.PostAsJsonAsync($"Tickets/{UserStringId}", ticketItem);
             var content = await response.Content.ReadAsStringAsync();
             var ticket = JsonConvert.DeserializeObject<Ticket>(content);
 
             if (response.IsSuccessStatusCode)
                 Navigation.NavigateTo($"/tickets");
 
-            else if(!response.IsSuccessStatusCode)
+            else if (!response.IsSuccessStatusCode)
                 ticketItem.AssignedUser.UserName = "Failed to find user, try again";
 
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }

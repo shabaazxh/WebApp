@@ -1,11 +1,13 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
 @using Newtonsoft.Json;
-
+@using Microsoft.AspNetCore.Authorization;
 @page "/company/create"
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
+
+@attribute [Authorize(Roles = "Admin")]
 
 <h3> Project create </h3>
 
@@ -43,9 +45,10 @@
             var companyobject = JsonConvert.DeserializeObject<Company>(content);
             Navigation.NavigateTo($"/company");
 
-        } catch (Exception e)
-            {
+        }
+        catch (Exception e)
+        {
 
-            }
+        }
     }
 }

@@ -19,7 +19,7 @@ namespace WebApp.Server.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProjectsController(ApplicationDbContext context, 
+        public ProjectsController(ApplicationDbContext context,
             UserManager<ApplicationUser> userManager)
         {
             _context = context;
@@ -30,7 +30,7 @@ namespace WebApp.Server.Controllers
         [HttpGet("{userID}/UserProjects")]
         public async Task<ActionResult<IEnumerable<Project>>> GetProjects(string userID)
         {
-            var projects = _context.Projects.Where(p => p.AssignedUsersToProject.Any(u => u.Id.Equals(userID))).ToList(); //find projects only for the currently logged in user
+            var projects = await _context.Projects.Where(p => p.AssignedUsersToProject.Any(u => u.Id.Equals(userID))).ToListAsync(); //find projects only for the currently logged in user
 
             foreach (var project in projects)
             {
@@ -67,15 +67,7 @@ namespace WebApp.Server.Controllers
             {
                 return BadRequest();
             }
-/*
-            foreach (var x in project.AssignedUsersToProject)
-            {
-                _context.Entry(x).State = EntityState.Unchanged;
-            }*/
-
             _context.Entry(project).State = EntityState.Modified;
-            // _context.Entry(project.AssignedUsersToProject).State = EntityState.Modified;
-            //_context.Entry(project.assignedCompanyForProject).State = EntityState.Modified;
 
             try
             {
@@ -100,7 +92,7 @@ namespace WebApp.Server.Controllers
         [HttpPut("removeUser/{username}/{projectID}")]
         public async Task<IActionResult> RemoveUserFromProject(string username, Guid projectID)
         {
-            var project = _context.Projects.Include(u => u.AssignedUsersToProject).FirstOrDefault(p => p.ProjectId.ToString().Equals(projectID.ToString()));
+            var project = await _context.Projects.Include(u => u.AssignedUsersToProject).FirstOrDefaultAsync(p => p.ProjectId.ToString().Equals(projectID.ToString()));
 
             project.AssignedUsersToProject.Remove(project.AssignedUsersToProject.First(u => u.UserName == username));
 
@@ -133,13 +125,19 @@ namespace WebApp.Server.Controllers
             try
             {
                 var user = _context.Users.First(u => u.UserName.Equals(userName));
-                project.AssignedUsersToProject.Add(user);
-            } catch (InvalidOperationException)
+
+                if (!project.AssignedUsersToProject.Any(u => u.UserName.Equals(user.UserName))) { 
+                    project.AssignedUsersToProject.Add(user);                    
+                } else
+                {
+                    return Forbid();
+                }
+            }
+            catch (InvalidOperationException)
             {
                 return BadRequest();
             }
-           
-            
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -167,7 +165,7 @@ namespace WebApp.Server.Controllers
         public async Task<ActionResult<Project>> PostProject(Project project)
         {
 
-            foreach(var x in project.AssignedUsersToProject)
+            foreach (var x in project.AssignedUsersToProject)
             {
                 _context.Entry(x).State = EntityState.Unchanged;
             }
@@ -177,12 +175,14 @@ namespace WebApp.Server.Controllers
             _context.Entry(project.assignedCompanyForProject).State = EntityState.Unchanged;
 
             _context.Projects.Add(project);
-            try { 
+            try
+            {
                 await _context.SaveChangesAsync();
                 return NoContent();
-               // return CreatedAtAction("GetProject", new { id = project.ProjectId }, project);
-            
-            } catch(Exception)
+                // return CreatedAtAction("GetProject", new { id = project.ProjectId }, project);
+
+            }
+            catch (Exception)
             {
                 return BadRequest();
             }

@@ -31,7 +31,7 @@ a, .btn-link {
     color: red;
 }
 
-.b-example-divider {
+/*.b-example-divider {
     flex-shrink: 0;
     width: 1.5rem;
     height: 100vh;
@@ -39,6 +39,24 @@ a, .btn-link {
     border: solid rgba(0, 0, 0, .15);
     border-width: 1px 0;
     box-shadow: inset 0 0.5em 1.5em rgb(0 0 0 / 10%), inset 0 0.125em 0.5em rgb(0 0 0 / 15%);
+}*/
+
+.b-example-divider-horizontal {
+    height: 3rem;
+    background-color: rgba(0, 0, 0, .1);
+    border: solid rgba(0, 0, 0, .15);
+    border-width: 1px 0;
+    box-shadow: inset 0 0.5em 1.5em rgb(0 0 0 / 10%), inset 0 0.125em 0.5em rgb(0 0 0 / 15%);
+}
+
+#projects-display {
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 5px -5px rgb(1 19 53 / 20%), 0 10px 10px -5px rgb(1 19 53 / 20%), 0 20px 20px -5px rgb(1 19 53 / 20%), 0 40px 40px -5px rgb(1 19 53 / 20%);
+}
+
+#tickets-display {
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 5px -5px rgb(1 19 53 / 20%), 0 10px 10px -5px rgb(1 19 53 / 20%), 0 20px 20px -5px rgb(1 19 53 / 20%), 0 40px 40px -5px rgb(1 19 53 / 20%);
 }
 
 #blazor-error-ui {

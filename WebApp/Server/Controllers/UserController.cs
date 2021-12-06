@@ -68,7 +68,7 @@ namespace WebApp.Server.Controllers
         [HttpPut("delete/user/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var user = userManager.Users.FirstOrDefault(u => u.Id.Equals(id));
+            var user = userManager.Users.Include( u => u.Projects).FirstOrDefault(u => u.Id.Equals(id));
             var result = await userManager.DeleteAsync(user);
 
             if (result.Succeeded)
@@ -79,8 +79,6 @@ namespace WebApp.Server.Controllers
             {
                 return BadRequest();
             }
-
-            return NoContent();
         }
 
     }

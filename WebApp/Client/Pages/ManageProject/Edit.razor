@@ -5,57 +5,34 @@
 
 @page "/projects/edit/{id:guid}"
 
-@attribute [Authorize(Roles = "Admin")]
-
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
 <h3> Edit Project </h3>
 
+<EditForm Model="@AssignUser" OnValidSubmit="@AddUserToProject">
 
-@if (projectItem == null)
+    @*    <DataAnnotationsValidator />*@
+    <div class="form-group">
+        <label class="custom-control-label"> Assign Users </label>
+        <InputText placeholder="Username" id="inlineFormInputGroup" type="email" @bind-Value="@AssignUser.UserName" class="form-control" />
+
+        <button type="submit" class="btn btn-success">Add</button>
+    </div>
+</EditForm>
+
+@if (userNotFoundError == true)
 {
-    <span> Getting the projectItem item to edit</span>
+    <div class="alert alert-danger" role="alert">
+        User could not be found
+    </div>
 }
-else
+
+@if (userExistsAlready == true)
 {
-    <EditForm Model="@projectItem" OnValidSubmit="@SubmitChanges">
-
-        <DataAnnotationsValidator />
-
-        <div class="form-group">
-            <label class="custom-control-label"> Name</label>
-            <InputText id="title" @bind-Value="projectItem.ProjectName" class="form-control" />
-            <InputText id="title" @bind-Value="projectItem.ProjectDescription" class="form-control" />
-
-            <label class="custom-control-label"> Progress </label>
-            <InputNumber @bind-Value="projectItem.currentProgress" class="form-control" />
-            <input type="date" @bind-value="projectItem.StartDate" class="form-control" />
-            <input type="date" @bind-value="projectItem.EndDate" class="form-control" />
-            <ValidationMessage For="@(() => projectItem.ProjectName)" />
-        </div>
-
-        <div class="form-check">
-            @if (projectItem.isComplete == true)
-            {
-                <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="projectItem.isComplete" checked>
-            }
-            else
-            {
-                <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="projectItem.isComplete">
-            }
-
-            <label class="form-check-label" for="flexCheckDefault">
-                Complete @projectItem.isComplete
-            </label>
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-
-            <i class="fas fa-save"></i>Save Changes
-        </button>
-        <ValidationSummary />
-    </EditForm>
+    <div class="alert alert-danger" role="alert">
+        User is already on the project
+    </div>
 }
 
 <EditForm Model="@designatedCompany" OnValidSubmit="@AddCompany">
@@ -97,16 +74,56 @@ else
     }
 }
 
-<EditForm Model="@AssignUser" OnValidSubmit="@AddUserToProject">
 
-@*    <DataAnnotationsValidator />*@
-    <div class="form-group">
-        <label class="custom-control-label"> Assign Users </label>
-        <InputText placeholder="Username" id="inlineFormInputGroup" type="email" @bind-Value="@AssignUser.UserName" class="form-control" />
 
-        <button type="submit" class="btn btn-success">Add</button>
-    </div>
-</EditForm>
+@if (projectItem == null)
+{
+    <span> Getting the projectItem item to edit</span>
+}
+else
+{
+    <EditForm Model="@projectItem" OnValidSubmit="@SubmitChanges">
+
+        <DataAnnotationsValidator />
+        
+        <div class="form-group">
+            <label class="custom-control-label"> Name</label>
+            <InputText id="title" @bind-Value="projectItem.ProjectName" class="form-control" />
+            <InputText id="title" @bind-Value="projectItem.ProjectDescription" class="form-control" />
+
+            <label class="custom-control-label"> Progress </label>
+            <InputNumber @bind-Value="projectItem.currentProgress" class="form-control" />
+            <input type="date" @bind-value="projectItem.StartDate" class="form-control" />
+            <input type="date" @bind-value="projectItem.EndDate" class="form-control" />
+            <ValidationMessage For="@(() => projectItem.ProjectName)" />
+        </div>
+
+        <div class="form-check">
+            @if (projectItem.isComplete == true)
+            {
+                <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="projectItem.isComplete" checked>
+            }
+            else
+            {
+                <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="projectItem.isComplete">
+            }
+
+            <label class="form-check-label" for="flexCheckDefault">
+                Complete @projectItem.isComplete
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+
+            <i class="fas fa-save"></i>Save Changes
+        </button>
+        <ValidationSummary />
+    </EditForm>
+}
+
+
+
+
 
 
 @code {
@@ -116,6 +133,9 @@ else
     private Company designatedCompany { get; set; } = new Company();
     private List<ApplicationUser> UsersOnProject { get; set; } = new List<ApplicationUser>();
     private ApplicationUser AssignUser { get; set; } = new ApplicationUser();
+
+    private bool userNotFoundError = false;
+    private bool userExistsAlready = false;
 
     string removeUsername { get; set; }
     protected override async Task OnInitializedAsync()
@@ -147,7 +167,7 @@ else
         }
     }
 
-    private async void AddCompany()
+    private async Task AddCompany()
     {
         try
         {
@@ -159,6 +179,7 @@ else
             {
                 projectItem.assignedCompanyForProject = companyObject;
                 projectItem.companyID = companyObject.CompanyId;
+                StateHasChanged();
             }
             else
             {
@@ -172,32 +193,46 @@ else
     }
 
     // Add a user to the project
-    private async void AddUserToProject()
+    private async Task AddUserToProject()
     {
 
         try
         {
             var response = await Http.PutAsJsonAsync($"Projects/add/User/{AssignUser.UserName}/{projectItem.ProjectId}", AssignUser);
-            var content = await response.Content.ReadAsStringAsync();
-            var userobject = JsonConvert.DeserializeObject<ApplicationUser>(content);
-            response.EnsureSuccessStatusCode();
 
-            if(response.IsSuccessStatusCode)
+            // Attempt add adding someone who is already on the project?
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
-                Navigation.NavigateTo("/projects");
+                if (userNotFoundError == true)
+                {
+                    userNotFoundError = false;
+                }
+                userExistsAlready = true;
 
+                // Attempt at adding someone who does not exist as a user?
             }
-
-
-            if (!response.IsSuccessStatusCode)
+            else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
-                AssignUser.UserName = "User not found, try again";
+                if (userExistsAlready == true)
+                {
+                    userExistsAlready = false;
+                }
+                userNotFoundError = true;
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var userobject = JsonConvert.DeserializeObject<ApplicationUser>(content);
+                response.EnsureSuccessStatusCode();
+                Navigation.NavigateTo("/projects");
+                userNotFoundError = false;
+                userExistsAlready = false;
             }
 
         }
         catch (Exception e)
         {
-
+            userNotFoundError = true;
         }
     }
 

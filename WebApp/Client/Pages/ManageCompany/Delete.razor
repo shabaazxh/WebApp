@@ -1,5 +1,7 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
+
 @page "/company/delete/{id:guid}"
 
 @inject HttpClient Http;
@@ -7,10 +9,12 @@
 
 <h3> Delete Project (@companyItem.CompanyName)</h3>
 
+@attribute [Authorize(Roles = "Admin")]
+
 
 @if (companyItem == null)
 {
-<span> Getting the project item to delete</span>
+    <span> Getting the project item to delete</span>
 }
 else
 {
@@ -45,7 +49,8 @@ else
         try
         {
             companyItem = await Http.GetFromJsonAsync<Company>($"Companies/{Id}");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }
@@ -60,7 +65,8 @@ else
             var response = await Http.DeleteAsync($"Companies/{companyItem.CompanyId}");
             response.EnsureSuccessStatusCode();
             Navigation.NavigateTo("/company");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }

@@ -23,7 +23,22 @@ else
             <label class="custom-control-label"> Name</label>
             <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
             <ValidationMessage For="@(() => ticketItem.Title)" />
+            <div class="form-check">
+                @if (ticketItem.isDone == true)
+                {
+                    <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="ticketItem.isDone" checked>
+                }
+                else
+                {
+                    <input class="form-check-input" type="checkbox" id="flexCheckDefault" @bind-value="ticketItem.isDone">
+                }
+
+                <label class="form-check-label" for="flexCheckDefault">
+                    Done @ticketItem.isDone
+                </label>
+            </div>
         </div>
+
 
         <button type="submit" class="btn btn-primary">
 

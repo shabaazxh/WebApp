@@ -24,18 +24,34 @@ namespace WebApp.Server.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/Tickets // GET ALL TICKETS 
+        // GET: api/Tickets // GET ALL TICKETS THAT MATCH USERID -- Tickets assigned to current user
         [HttpGet("{currentUserID}/UserTickets")]
         public async Task<ActionResult<IEnumerable<Ticket>>> GetTickets(string currentUserID)
         {
             try
             {
-                var query = _context.Tickets.Where(t => t.UserID.ToString().Equals(currentUserID));
+                var query = _context.Tickets.Include(u => u.CreatedBy).Where(t => t.UserID.ToString().Equals(currentUserID));
                 return await query.ToListAsync();
             } catch (Exception e)
             {
                 return new List<Ticket>();
-            }        
+            }
+
+        }
+
+        // Tickets that have been created by the user
+        [HttpGet("{currentUserID}/User/CreatedTickets")]
+        public async Task<ActionResult<IEnumerable<Ticket>>> GetUserCreatedTickets(string currentUserID)
+        {
+            try
+            {
+                var query = _context.Tickets.Include(u => u.AssignedUser).Include(u => u.CreatedBy).Where(t => t.CreatedByUser.ToString().Equals(currentUserID));
+                return await query.ToListAsync();
+            }
+            catch (Exception e)
+            {
+                return new List<Ticket>();
+            }
 
         }
 
@@ -84,22 +100,24 @@ namespace WebApp.Server.Controllers
             return NoContent();
         }
 
-        // POST: api/Tickets
+        // POST: api/Tickets :::: CREATE A TICKET ::::
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Ticket>> PostTicket(Ticket ticket)
+        [HttpPost("{createdByUserID}")]
+        public async Task<ActionResult<Ticket>> PostTicket(string createdByUserID, Ticket ticket)
         {
             ApplicationUser userValid;
             try
             {
-                // Find user
+                var createdByUser = _userManager.Users.First(u => u.Id.Equals(createdByUserID));
+               
+                // Find user the ticket is being assigned to
                 userValid = _userManager.Users.Where(s => s.Email == ticket.AssignedUser.UserName).First();
                 var ID = _userManager.Users.First(c => c.Email.Equals(userValid.Email)).Id;
-                
-                // if no tickets assigned before == null list
 
                 ticket.AssignedUser = userValid;
                 ticket.UserID = Guid.Parse(ID);
+                ticket.CreatedByUser = Guid.Parse(createdByUser.Id);
+                ticket.CreatedBy = createdByUser;
 
                 _context.Tickets.Add(ticket);
                  await _context.SaveChangesAsync();

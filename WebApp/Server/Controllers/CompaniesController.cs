@@ -28,14 +28,14 @@ namespace WebApp.Server.Controllers
             var companies = _context.Companies.ToList();
 
             // for each company find its projects
-            foreach(var company in companies)
+            foreach (var company in companies)
             {
                 var query = _context.Projects.Where(p => p.companyID.ToString().Equals(company.CompanyId.ToString())); // match project company id to current company id
-                List<Project> companyProjects = new List<Project>(); 
-                
+                List<Project> companyProjects = new List<Project>();
+
                 // --- This is done to prevent the JSON cylic error --- 
                 // loop through the projects from query, extract information and add to list
-                foreach(var project in query.ToList())
+                foreach (var project in query.ToList())
                 {
                     Project x = new Project { ProjectId = project.ProjectId, ProjectName = project.ProjectName, ProjectDescription = project.ProjectDescription };
                     companyProjects.Add(x);

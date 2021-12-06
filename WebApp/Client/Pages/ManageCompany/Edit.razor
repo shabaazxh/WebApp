@@ -1,10 +1,13 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
 
 @page "/company/edit/{id:guid}"
 
 @inject HttpClient Http;
 @inject NavigationManager Navigation;
+
+@attribute [Authorize(Roles = "Admin")]
 
 <h3> Edit Company </h3>
 
@@ -36,14 +39,17 @@ else
 
 @code {
 
-    [Parameter] public Guid Id {get; set;}
+    [Parameter] public Guid Id { get; set; }
     private Company companyItem { get; set; } = new Company();
 
     protected override async Task OnInitializedAsync()
     {
-        try {
+        try
+        {
             companyItem = await Http.GetFromJsonAsync<Company>($"Companies/{Id}");
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
 
         }
     }
@@ -55,7 +61,8 @@ else
             var response = await Http.PutAsJsonAsync<Company>($"Companies/{companyItem.CompanyId}", companyItem);
             response.EnsureSuccessStatusCode();
             Navigation.NavigateTo("/company");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }

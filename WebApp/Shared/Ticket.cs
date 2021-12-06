@@ -28,8 +28,12 @@ namespace WebApp.Shared
         
         public bool isDone { get; set; }
         
-        public Guid UserID { get; set; }
+        public Guid UserID { get; set; } //who the ticket is assigned to
 
+        public Guid CreatedByUser { get; set; } //who this ticket is created by
+
+        public ApplicationUser CreatedBy { get; set; }
+        
         public ApplicationUser AssignedUser { get; set; }
 
         public TicketType ticketType { get; set; }

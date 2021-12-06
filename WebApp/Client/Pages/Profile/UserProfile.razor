@@ -30,7 +30,7 @@
                 }
                 else
                 {
-                <p>Tickets assigned to you: @UserTicks.Count()</p>
+                <p>Tickets assigned to you: @UserTicks.Where(t => t.isDone == false).Count())</p>
                 }
 
             </li>
@@ -41,10 +41,10 @@
         <p> The value is null</p>
 
         }
-        <button type="submit" class="btn btn-danger" @onclick="DeleteUser">
+@*        <button type="submit" class="btn btn-danger" @onclick="DeleteUser">
 
             <i class="fas fa-save"></i>Deactivate
-        </button>
+        </button>*@
 
     </Authorized>
 
