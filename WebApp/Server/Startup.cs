@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using WebApp.Server.Services;
 
 namespace WebApp.Server
 {
@@ -52,13 +53,17 @@ namespace WebApp.Server
                     options.IdentityResources["openid"].UserClaims.Add("role");
                     options.ApiResources.Single().UserClaims.Add("role");
                 });
-            // Need to do this as it maps "role" to ClaimTypes.Role and causes issues
+
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
             services.AddControllersWithViews();
+
+/*            services.AddTransient<IEmailSender, EmailSender>();
+            services.Configure<AuthMessageSenderOptions>(Configuration);*/
+
 
             services.AddRazorPages();
 

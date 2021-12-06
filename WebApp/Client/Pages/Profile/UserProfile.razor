@@ -10,7 +10,6 @@
 @inject HttpClient http
 @inject NavigationManager Navigation
 
-
 <h3> Account profile </h3>
 
 <AuthorizeView>
@@ -39,8 +38,10 @@
         else
         {
         <p> The value is null</p>
-
+            
         }
+
+        <a href="/resetpassword">Reset password</a>
 @*        <button type="submit" class="btn btn-danger" @onclick="DeleteUser">
 
             <i class="fas fa-save"></i>Deactivate

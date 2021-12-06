@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApp.Server.Data;
 
 namespace WebApp.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211206140334_ticketupdate8")]
+    partial class ticketupdate8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -444,13 +446,13 @@ namespace WebApp.Server.Migrations
                     b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("AssignedUsersToProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebApp.Shared.Project", null)
                         .WithMany()
                         .HasForeignKey("ProjectsProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -459,7 +461,7 @@ namespace WebApp.Server.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -468,7 +470,7 @@ namespace WebApp.Server.Migrations
                     b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -477,7 +479,7 @@ namespace WebApp.Server.Migrations
                     b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -486,13 +488,13 @@ namespace WebApp.Server.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -501,7 +503,7 @@ namespace WebApp.Server.Migrations
                     b.HasOne("WebApp.Shared.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
@@ -510,7 +512,7 @@ namespace WebApp.Server.Migrations
                     b.HasOne("WebApp.Shared.Company", "assignedCompanyForProject")
                         .WithMany("WorkingOnProject")
                         .HasForeignKey("companyID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("assignedCompanyForProject");
@@ -520,11 +522,13 @@ namespace WebApp.Server.Migrations
                 {
                     b.HasOne("WebApp.Shared.ApplicationUser", "AssignedUser")
                         .WithMany()
-                        .HasForeignKey("AssignedUserId");
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("WebApp.Shared.ApplicationUser", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("CreatedById");
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AssignedUser");
 

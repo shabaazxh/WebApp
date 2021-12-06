@@ -70,6 +70,7 @@ namespace WebApp.Server.Controllers
         {
             var user = userManager.Users.Include( u => u.Projects).FirstOrDefault(u => u.Id.Equals(id));
             var result = await userManager.DeleteAsync(user);
+            
 
             if (result.Succeeded)
             {
