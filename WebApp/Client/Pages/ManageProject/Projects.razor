@@ -86,6 +86,7 @@
 
     private List<Project> all_projects = new List<Project>();
 
+    // Get all projects the current user is involved in
     protected override async Task OnInitializedAsync()
     {
         var user = (await ASP.GetAuthenticationStateAsync()).User;

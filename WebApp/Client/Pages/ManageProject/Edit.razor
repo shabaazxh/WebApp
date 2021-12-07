@@ -159,7 +159,6 @@ else
         try
         {
             var response = await Http.PutAsJsonAsync<Project>($"Projects/{projectItem.ProjectId}", projectItem);
-            //var response = await Http.PutAsJsonAsync<Project>($"Projects/removeUser/{removeUsername}/{projectItem.ProjectId}", projectItem);
             response.EnsureSuccessStatusCode();
             Navigation.NavigateTo("/projects");
         }

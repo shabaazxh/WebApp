@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace WebApp.Server.Controllers
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("[controller]")]
 
@@ -40,20 +39,6 @@ namespace WebApp.Server.Controllers
 
             return user;
         }
-
-        // Get currently logged in users tickets
-/*        [HttpGet("{userID}/UsersTickets")]
-        public async Task<ActionResult<IEnumerable<Ticket>>> GetAllUserTickets(string userID)
-        {
-            try { 
-                var findTickets = await context.Tickets.Where(t => t.UserID.ToString().Equals(userID)).ToListAsync();
-                return findTickets;
-            } catch(Exception)
-            {
-                return new List<Ticket>();
-            }
-            
-        }*/
 
         // Name of the user the ticket belongs to
         [HttpGet("{ticketID}/UserForTicket")]

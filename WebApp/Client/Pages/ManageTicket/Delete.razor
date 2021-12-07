@@ -47,6 +47,7 @@ else
 
         try
         {
+            // Get the current ticket to be deleted
             ticketItem = await Http.GetFromJsonAsync<Ticket>($"Tickets/{Id}");
         }
         catch (Exception e)
@@ -56,6 +57,7 @@ else
 
     }
 
+    // Submit request to delete the ticket
     private async void SubmitDelete()
 
     {

@@ -34,9 +34,9 @@
 
     private Company companyItem { get; set; } = new Company();
 
-    private async void CreateNewCompany()
+    // Create the company by sending a POST request to Companies API
+    private async Task CreateNewCompany()
     {
-
         try
         {
             var response = await Http.PostAsJsonAsync("Companies", companyItem);

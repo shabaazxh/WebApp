@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApp.Server.Data;
 using WebApp.Shared;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApp.Server.Controllers
 {

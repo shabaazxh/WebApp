@@ -42,6 +42,7 @@ else
     [Parameter] public Guid Id { get; set; }
     private Company companyItem { get; set; } = new Company();
 
+    // Get the current company needing to be edited
     protected override async Task OnInitializedAsync()
     {
         try
@@ -54,6 +55,7 @@ else
         }
     }
 
+    // Confirm changes to the company
     private async void SubmitChanges()
     {
         try

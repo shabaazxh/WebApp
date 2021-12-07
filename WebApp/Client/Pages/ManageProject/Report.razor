@@ -117,6 +117,7 @@ else
     private Company designatedCompany { get; set; } = new Company();
     private List<Ticket> associatedTickets { get; set; } 
 
+    // Get the project selected and it's associated tickets
     protected override async Task OnInitializedAsync()
     {
         try

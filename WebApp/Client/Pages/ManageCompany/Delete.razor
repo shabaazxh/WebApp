@@ -50,6 +50,7 @@ else
     private Company companyItem { get; set; } = new Company();
     private bool canDelete = true;
 
+    // Get the company selected for deletion
     protected override async Task OnInitializedAsync()
     {
 
@@ -64,6 +65,7 @@ else
 
     }
 
+    // Confirm the company for deletion
     private async Task SubmitDelete()
 
     {
