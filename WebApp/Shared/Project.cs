@@ -33,6 +33,8 @@ namespace WebApp.Shared
 
         public DateTime EndDate { get; set; }
 
+        public DateTime CompletedDate { get; set; }
+
         public Company assignedCompanyForProject { get; set; }
     }
 }

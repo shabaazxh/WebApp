@@ -29,6 +29,13 @@ else
     <label><strong>End Date</strong></label>
     <p> @projectItem.EndDate </p>
 
+    <label> <strong>Status</strong></label>
+    @if (projectItem.isComplete == true)
+    {
+        <p>Completed: @projectItem.CompletedDate</p>
+    } else {
+        <p>Incomplete</p>
+    }
     <label><strong>Company</strong></label>
     <p>
         @if (projectItem.assignedCompanyForProject != null)
@@ -86,7 +93,8 @@ else
             <ul>
                 @foreach (var ticket in associatedTickets)
                 {
-                    <li> @ticket.Title</li> 
+                    <li> @ticket.Title</li>
+
                 }
             </ul>
         }
@@ -115,7 +123,7 @@ else
     [Parameter] public Guid Id { get; set; }
     private Project projectItem { get; set; } = new Project();
     private Company designatedCompany { get; set; } = new Company();
-    private List<Ticket> associatedTickets { get; set; } 
+    private List<Ticket> associatedTickets { get; set; }
 
     // Get the project selected and it's associated tickets
     protected override async Task OnInitializedAsync()

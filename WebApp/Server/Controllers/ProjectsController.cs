@@ -67,6 +67,21 @@ namespace WebApp.Server.Controllers
             {
                 return BadRequest();
             }
+
+            if (project.isComplete)
+            {
+                var findProject = _context.Projects.Where(p => p.ProjectId.ToString().Equals(project.ProjectId.ToString())).AsNoTracking().FirstOrDefault();
+
+                if (findProject.isComplete)
+                {
+                    _context.Entry(project).Property(p => p.CompletedDate).IsModified = false;
+
+                } else
+                {
+                    project.CompletedDate = DateTime.Now;
+                } 
+            } 
+
             _context.Entry(project).State = EntityState.Modified;
 
             try

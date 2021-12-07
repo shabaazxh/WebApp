@@ -127,14 +127,22 @@ namespace WebApp.Server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCompany(Guid id)
         {
-            var company = await _context.Companies.FindAsync(id);
+            var company = await _context.Companies.Include(c => c.WorkingOnProject).Where(c => c.CompanyId.ToString().Equals(id.ToString())).FirstAsync();
             if (company == null)
             {
                 return NotFound();
             }
 
-            _context.Companies.Remove(company);
-            await _context.SaveChangesAsync();
+            // if there are projects associated to this company do not allow deletion
+            if(company.WorkingOnProject.Count > 0)
+            {
+                return Forbid();
+
+            } else //otherwise it's okay to delete the company
+            {
+                _context.Companies.Remove(company);
+                await _context.SaveChangesAsync();
+            }
 
             return NoContent();
         }
