@@ -59,6 +59,11 @@ a, .btn-link {
     box-shadow: 0 5px 5px -5px rgb(1 19 53 / 20%), 0 10px 10px -5px rgb(1 19 53 / 20%), 0 20px 20px -5px rgb(1 19 53 / 20%), 0 40px 40px -5px rgb(1 19 53 / 20%);
 }
 
+#userform {
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 5px -5px rgb(1 19 53 / 20%), 0 10px 10px -5px rgb(1 19 53 / 20%), 0 20px 20px -5px rgb(1 19 53 / 20%), 0 40px 40px -5px rgb(1 19 53 / 20%);
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

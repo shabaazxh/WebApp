@@ -1,8 +1,10 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
+@using Microsoft.AspNetCore.Authorization;
 
 @page "/tickets/edit/{id:guid}"
 
+@attribute [Authorize]
 @inject HttpClient Http;
 @inject NavigationManager Navigation;
 
@@ -15,12 +17,35 @@
 }
 else
 {
+    <EditForm Model="@AssignUser" OnValidSubmit="@ChangeUser">
+
+        <div class="form-group">
+            <label class="col-form-label"> Current user: @ticketItem.AssignedUser.UserName </label>
+            <InputText placeholder="Username" id="inlineFormInputGroup" type="email" @bind-Value="@AssignUser.UserName" class="form-control" />
+
+            <button type="submit" class="btn btn-success">Change user</button>
+        </div>
+    </EditForm>
+
+    @if (userNotFoundError == true)
+    {
+        <div class="alert alert-danger" role="alert">
+            User could not be found
+        </div>
+    }
+
+    @if (userChangeSuccess == true)
+    {
+        <div class="alert alert-success" role="alert">
+            User has been successfully changed.
+        </div>
+    }
     <EditForm Model="@ticketItem" OnValidSubmit="@SubmitChanges">
 
         <DataAnnotationsValidator />
 
         <div class="form-group">
-            <label class="custom-control-label"> Name</label>
+            <label class="col-form-label"> Name</label>
             <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
             <ValidationMessage For="@(() => ticketItem.Title)" />
             <div class="form-check">
@@ -46,31 +71,73 @@ else
         </button>
         <ValidationSummary />
     </EditForm>
+
 }
 
 
 @code {
 
-    [Parameter] public Guid Id {get; set;}
+    [Parameter] public Guid Id { get; set; }
     private Ticket ticketItem { get; set; } = new Ticket();
+    private ApplicationUser AssignUser { get; set; } = new ApplicationUser();
+
+    private bool userNotFoundError = false;
+    private bool userChangeSuccess = false;
 
     protected override async Task OnInitializedAsync()
     {
-        try {
+        try
+        {
+            ticketItem.AssignedUser = new ApplicationUser();
             ticketItem = await Http.GetFromJsonAsync<Ticket>($"Tickets/{Id}");
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
+
+        }
+    }
+    // Change the user assigned on the ticket
+    private async Task ChangeUser()
+    {
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"Tickets/changeuser/{AssignUser.UserName}/{ticketItem.Id}", AssignUser);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                if(userChangeSuccess == true)
+                {
+                    userChangeSuccess = false;
+                }
+                userNotFoundError = true;
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (userNotFoundError == true)
+                {
+                    userNotFoundError = false;
+                }
+                userChangeSuccess = true;
+            }
+
+        }
+        catch (Exception)
+        {
 
         }
     }
 
-    private async void SubmitChanges()
+    private async Task SubmitChanges()
     {
         try
         {
             var response = await Http.PutAsJsonAsync<Ticket>($"Tickets/{ticketItem.Id}", ticketItem);
             response.EnsureSuccessStatusCode();
             Navigation.NavigateTo("/tickets");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }

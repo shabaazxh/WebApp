@@ -24,12 +24,29 @@
         <button type="submit" class="btn btn-primary">Start Prediction</button>
     </div>
 
-    @if(predictedInfo.Count != 0) {
+    @if (predictedInfo.Count != 0 && !predictedInfo.ContainsKey("not_enough_data"))
+    {
         <h1>Prediction: </h1>
         <p> Projects per company count: @predictedInfo["projects"] </p>
         <p> Users per project count: @predictedInfo["users"] </p>
-    } else {
+    }
+    else
+    {
         <p>Enter a date and press the button to begin a prediction</p>
+    }
+
+    @if (isDataEnough == false)
+    {
+        <div class="alert alert-danger" role="alert">
+            There is not enough data to make a prediction yet.
+        </div>
+    }
+
+    @if (predictionComplete == true)
+    {
+        <div class="alert alert-success" role="alert">
+            Prediction Complete!
+        </div>
     }
 
 
@@ -42,17 +59,30 @@
         private int usersPerProject { get; set; }
         private bool triggerMes = true;
 
+        private bool isDataEnough = true;
+        private bool predictionComplete = false;
+
         private Dictionary<string, int> predictedInfo = new Dictionary<string, int>();
 
         private async Task InitPrediction()
         {
             predictedInfo = await http.GetFromJsonAsync<Dictionary<string, int>>($"Prediction/{selectedDate.ToString("dd - MM - yyyy")}");
-            Navigation.NavigateTo("/prediction");
-        }
 
-        private void setTriggerMess()
-        {
-            triggerMes = false;
-        }
+            // if the prediction did not find enough data for the prediction
+            if (predictedInfo.ContainsKey("not_enough_data"))
+            {
+                Navigation.NavigateTo("/prediction");
+                isDataEnough = false;
 
+            } else
+            {
+                if(isDataEnough == false)
+                {
+                    isDataEnough = true;
+                }
+
+                predictionComplete = true;
+                Navigation.NavigateTo("/prediction");
+            }
+        }
     }

@@ -87,11 +87,12 @@ else
         <DataAnnotationsValidator />
         
         <div class="form-group">
-            <label class="custom-control-label"> Name</label>
+            <label class="col-form-label"> Project Name</label>
             <InputText id="title" @bind-Value="projectItem.ProjectName" class="form-control" />
+            <label class="col-form-label"> Project Description </label>
             <InputText id="title" @bind-Value="projectItem.ProjectDescription" class="form-control" />
 
-            <label class="custom-control-label"> Progress </label>
+            <label class="col-form-label"> Progress </label>
             <InputNumber @bind-Value="projectItem.currentProgress" class="form-control" />
             <input type="date" @bind-value="projectItem.StartDate" class="form-control" />
             <input type="date" @bind-value="projectItem.EndDate" class="form-control" />
@@ -138,6 +139,7 @@ else
     private bool userExistsAlready = false;
 
     string removeUsername { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -151,7 +153,7 @@ else
 
         }
     }
-
+    // Submit all changes made to current project to save the changes
     private async void SubmitChanges()
     {
         try
@@ -166,7 +168,7 @@ else
 
         }
     }
-
+    // Add a company to the project
     private async Task AddCompany()
     {
         try
@@ -236,6 +238,7 @@ else
         }
     }
 
+    // Remove a user from the project
     private async void RemoveUser(string username)
     {
         removeUsername = username;

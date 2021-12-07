@@ -34,16 +34,16 @@ namespace WebApp.Server.Controllers
         [HttpGet("{findUserID}")]
         public async Task<ActionResult<ApplicationUser>> GetCurrentUser(string findUserID)
         {
-            var user = userManager.Users.First(x => x.Id.Equals(findUserID));
-            user.LastAccessed = DateTime.Now;
-            context.SaveChanges();
+            var user = userManager.Users.First(x => x.Id.Equals(findUserID)); //find user
+            user.LastAccessed = DateTime.Now; //set users last login to now
+            context.SaveChanges(); // save to database
 
             return user;
         }
 
         // Get currently logged in users tickets
-        [HttpGet("{userID}/UsersTickets")]
-        public async Task<ActionResult<IEnumerable<Ticket>>> GetUserTickets(string userID)
+/*        [HttpGet("{userID}/UsersTickets")]
+        public async Task<ActionResult<IEnumerable<Ticket>>> GetAllUserTickets(string userID)
         {
             try { 
                 var findTickets = await context.Tickets.Where(t => t.UserID.ToString().Equals(userID)).ToListAsync();
@@ -53,7 +53,7 @@ namespace WebApp.Server.Controllers
                 return new List<Ticket>();
             }
             
-        }
+        }*/
 
         // Name of the user the ticket belongs to
         [HttpGet("{ticketID}/UserForTicket")]
@@ -63,23 +63,6 @@ namespace WebApp.Server.Controllers
             var user = userManager.Users.First(x => x.Id.Equals(ticketUser.UserID.ToString()));
 
             return new ApplicationUser { Id = user.Id, UserName = user.UserName };
-        }
-
-        [HttpPut("delete/user/{id}")]
-        public async Task<IActionResult> DeleteUser(string id)
-        {
-            var user = userManager.Users.Include( u => u.Projects).FirstOrDefault(u => u.Id.Equals(id));
-            var result = await userManager.DeleteAsync(user);
-            
-
-            if (result.Succeeded)
-            {
-                await _signInManager.SignOutAsync();
-                return LocalRedirect("/");
-            } else
-            {
-                return BadRequest();
-            }
         }
 
     }

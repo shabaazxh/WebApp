@@ -64,15 +64,13 @@ namespace WebApp.Server
 /*            services.AddTransient<IEmailSender, EmailSender>();
             services.Configure<AuthMessageSenderOptions>(Configuration);*/
 
-
             services.AddRazorPages();
 
             services.Configure<IdentityOptions>(options =>
             options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier);
 
            services.AddControllers().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize);
-
-    }
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

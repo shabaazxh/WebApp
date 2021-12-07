@@ -26,7 +26,7 @@ namespace WebApp.Server.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/Projects // GET ALL PROJECTS
+        // GET ALL PROJECTS WHERE CURRENT USER IS INVOLVED
         [HttpGet("{userID}/UserProjects")]
         public async Task<ActionResult<IEnumerable<Project>>> GetProjects(string userID)
         {
@@ -42,13 +42,13 @@ namespace WebApp.Server.Controllers
             return projects;
         }
 
-        // GET: api/Projects/5
+        // GET A PROJECT 
         [HttpGet("{id}")]
         public async Task<ActionResult<Project>> GetProject(Guid id)
         {
-            var project = await _context.Projects.FindAsync(id);
+            var project = await _context.Projects.FindAsync(id); // Find project by id
             var query = _context.Users.Where(u => u.Projects.Any(p => p.ProjectId.ToString().Equals(project.ProjectId.ToString()))); //find all users for the project
-            project.AssignedUsersToProject = query.ToList();
+            project.AssignedUsersToProject = query.ToList(); //set found users to the assigned users list
 
             if (project == null)
             {
@@ -58,8 +58,7 @@ namespace WebApp.Server.Controllers
             return project;
         }
 
-        // PUT: api/Projects/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // EDIT PROJECT - UPDATE PROPERTIES OF THE PROJECT
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProject(Guid id, Project project)
         {
@@ -88,7 +87,7 @@ namespace WebApp.Server.Controllers
             return NoContent();
         }
 
-        // Remove user from a project
+        // EDIT PROJECT - REMOVE A USER FROM THE PROJECT
         [HttpPut("removeUser/{username}/{projectID}")]
         public async Task<IActionResult> RemoveUserFromProject(string username, Guid projectID)
         {
@@ -115,7 +114,7 @@ namespace WebApp.Server.Controllers
             return NoContent();
         }
 
-        // Add user to the project
+        // EDIT PROJECT -- ADDING USER'S WHEN EDITING THE PROJECT
         [HttpPut("add/User/{userName}/{projID}")]
         public async Task<IActionResult> AddUserToProject(string userName, Guid projID)
         {
@@ -159,21 +158,22 @@ namespace WebApp.Server.Controllers
 
 
 
-        // POST: api/Projects
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        // CREATE A NEW PROJECT
         [HttpPost]
         public async Task<ActionResult<Project>> PostProject(Project project)
         {
-
+            // Ensure state is unchaged to prevent duplicate keys 
             foreach (var x in project.AssignedUsersToProject)
             {
                 _context.Entry(x).State = EntityState.Unchanged;
             }
-
+            // Assign correct company
             project.companyID = project.assignedCompanyForProject.CompanyId;
-
+            
+            // Set unchaed to prevent duplicate key
             _context.Entry(project.assignedCompanyForProject).State = EntityState.Unchanged;
 
+            // Add project 
             _context.Projects.Add(project);
             try
             {
@@ -188,7 +188,7 @@ namespace WebApp.Server.Controllers
             }
         }
 
-        // Find and return user to add to the project
+        // ADD USER TO THE PROJECT - FIND AND RETURN USER TO BE ADDED
         [HttpPost("{userEmail}")]
         public async Task<ActionResult<ApplicationUser>> AddUserToProject(string userEmail)
         {
@@ -206,7 +206,7 @@ namespace WebApp.Server.Controllers
             }
         }
 
-        // DELETE: api/Projects/5
+        // DELETE A PROJECT
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(Guid id)
         {
@@ -227,7 +227,7 @@ namespace WebApp.Server.Controllers
             return _context.Projects.Any(e => e.ProjectId == id);
         }
 
-
+        // GET COMPANY ASSOCIATED TO A PROJECT USING THE PROJECTID
         [HttpGet("{projectID}/CompanyProject")]
         public async Task<ActionResult<Company>> GetCompanyForProject(Guid projectID)
         {

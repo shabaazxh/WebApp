@@ -6,7 +6,7 @@
 
 @page "/account"
 
-@attribute [AllowAnonymous]
+@attribute [Authorize]
 @inject HttpClient http
 @inject NavigationManager Navigation
 
@@ -16,11 +16,10 @@
     <Authorized>
         @if (@CurrentUser != null)
         {
-        <h1> Users: @CurrentUser</h1>
+        <h1> User: @CurrentUser</h1>
         <ul class="list-group">
 
             <li class="list-group-item">
-                <p>UserID: @CurrentUser.Id</p>
                 <p>UserEmail: @CurrentUser.UserName</p>
                 <p>Last logged in: @CurrentUser.LastAccessed</p>
                 @if (@UserTicks.Count() == 0)
@@ -29,7 +28,7 @@
                 }
                 else
                 {
-                <p>Tickets assigned to you: @UserTicks.Where(t => t.isDone == false).Count())</p>
+                <p>Tickets assigned to you: @UserTicks.Where(t => t.isDone == false).Count()</p>
                 }
 
             </li>
@@ -40,13 +39,6 @@
         <p> The value is null</p>
             
         }
-
-        <a href="/resetpassword">Reset password</a>
-@*        <button type="submit" class="btn btn-danger" @onclick="DeleteUser">
-
-            <i class="fas fa-save"></i>Deactivate
-        </button>*@
-
     </Authorized>
 
 </AuthorizeView>
@@ -65,13 +57,7 @@
 
                 if (UserStringId != "" || UserStringId != null)
                     CurrentUser = await http.GetFromJsonAsync<ApplicationUser>($"User/{UserStringId}");
-                    UserTicks = await http.GetFromJsonAsync<List<Ticket>>($"User/{UserStringId}/UsersTickets");
-            }
-
-            private async void DeleteUser()
-            {
-                var response = await http.PutAsJsonAsync<ApplicationUser>($"User/delete/user/{CurrentUser.Id}", CurrentUser);
-
+                    UserTicks = await http.GetFromJsonAsync<List<Ticket>>($"Tickets/{UserStringId}/UserTickets");
             }
 
         }

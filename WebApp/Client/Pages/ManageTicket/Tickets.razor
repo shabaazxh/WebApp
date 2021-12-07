@@ -7,162 +7,157 @@
 
 @page "/tickets"
 
-@attribute [Authorize]
+@attribute [AllowAnonymous]
 @inject HttpClient http
 @inject NavigationManager Navigation
 
 
 <h3> Assigned Tickets (@all_tickets.Where( t => t.isDone == false).Count())</h3>
 
-@if (all_tickets.Count() == 0)
-{
-    <p> There are currently no tickets </p>
-}
-
-<ul class="list-group">
-    <a href="tickets/create"> Create Ticket</a>
-    @if (all_tickets != null)
-    {
-        @foreach (var ticket in all_tickets)
+<AuthorizeView>
+    <Authorized>
+        @if (all_tickets.Count() == 0)
         {
-            if (ticket.isDone == false)
+            <p> There are currently no tickets </p>
+        }
+
+        <ul class="list-group">
+            <a href="tickets/create"> Create Ticket</a>
+            @if (all_tickets != null)
             {
-                <li class="list-group-item">
-                    <p> Title: @ticket.Title </p>
-                    <p> Type: @ticket.ticketType</p>
-                    @if (ticket.AssignedUser.UserName != null)
+                @foreach (var ticket in all_tickets)
+                {
+                    if (ticket.isDone == false)
                     {
-                        <p> Assigned user: @ticket.AssignedUser.UserName</p>
-                    }
-                    else
-                    {
-                        <p> Assigned user: User is deleted</p>
-                    }
+                        <li class="list-group-item">
+                            <p> Title: @ticket.Title </p>
+                            <p> Type: @ticket.ticketType</p>
+                            @if (ticket.AssignedUser.UserName != null)
+                            {
+                                <p> Assigned user: @ticket.AssignedUser.UserName</p>
+                            }
+                            else
+                            {
+                                <p> Assigned user: User is deleted</p>
+                            }
 
-                    @if (ticket.CreatedBy != null)
-                    {
-                        <p> Created by: @ticket.CreatedBy.UserName</p>
-                    }
-                    else
-                    {
-                        <p> Assigned user: User is deleted</p>
-                    }
+                            @if (ticket.CreatedBy != null)
+                            {
+                                <p> Created by: @ticket.CreatedBy.UserName</p>
+                            }
+                            else
+                            {
+                                <p> Assigned user: User is deleted</p>
+                            }
+
+                            @if(ticket.AssociatedProject != null)
+                            {
+                                <p>Project: @ticket.AssociatedProject.ProjectName</p>
+                            } else
+                            {
+                                <p> could not find project.</p>
+                            }
 
 
-                    <a href="tickets/edit/@ticket.Id"> Edit</a>
-                    <a href="tickets/delete/@ticket.Id"> Delete</a>
-                </li>
+                            <a href="tickets/edit/@ticket.Id"> Edit</a>
+                            <a href="tickets/delete/@ticket.Id"> Delete</a>
+                        </li>
+                    }
+                }
             }
-        }
-    }
-    else
-    {
-        <p> The value is null</p>
-    }
-</ul>
-
-
-<hr />
-
-<h3> Completed </h3>
-
-@if (all_tickets.Count() == 0)
-{
-    <p> There are currently no tickets </p>
-}
-
-<ul class="list-group">
-    @if (all_tickets != null)
-    {
-        @foreach (var ticket in all_tickets)
-        {
-            if (ticket.isDone == true)
+            else
             {
-                <div class="alert alert-success" role="alert">
-                    <strong>Ticket:</strong> @ticket.Title <strong>Type:</strong> @ticket.ticketType <strong>Complete:</strong> @ticket.isDone <strong>Assign to:</strong> @if(ticket.AssignedUser.UserName != null) { @ticket.AssignedUser.UserName} <strong>Created by:</strong>  @if(ticket.CreatedBy != null) { @ticket.CreatedBy.UserName}
-                
-                    <a href="tickets/edit/@ticket.Id"> Edit</a>
-                    <a href="tickets/delete/@ticket.Id"> Delete</a>
-                </div>
-                @*<li class="list-group-item">
-                    <p> Title: @ticket.Title </p>
-                    <p> Type: @ticket.ticketType</p>
-                    <p> Complete: @ticket.isDone</p>
-                    @if (ticket.AssignedUser.UserName != null)
-                    {
-                        <p> Assigned user: @ticket.AssignedUser.UserName</p>
-                    }
-                    else
-                    {
-                        <p> Assigned user: User is deleted</p>
-                    }
-
-                    @if (ticket.CreatedBy != null)
-                    {
-                        <p> Created by: @ticket.CreatedBy.UserName</p>
-                    }
-                    else
-                    {
-                        <p> Assigned user: User is deleted</p>
-                    }
-
-                    <a href="tickets/edit/@ticket.Id"> Edit</a>
-                    <a href="tickets/delete/@ticket.Id"> Delete</a>
-                </li>*@
+                <p> The value is null</p>
             }
-        }
-    }
-    else
-    {
-        <p> The value is null</p>
-    }
-</ul>
+        </ul>
 
-<hr />
 
-<h3> Created by You </h3>
+        <hr />
 
-@if (createdByCurrentUser.Count() == 0)
-{
-    <p> There are currently no tickets </p>
-}
+        <h3> Completed </h3>
 
-<ul class="list-group">
-    @if (createdByCurrentUser != null)
-    {
-        @foreach (var ticket in createdByCurrentUser)
+
+        @if (all_tickets.Count() == 0)
         {
-            <li class="list-group-item">
-                <p> Title: @ticket.Title </p>
-                <p> Type: @ticket.ticketType</p>
-                @if (ticket.AssignedUser.UserName != null)
-                {
-                    <p> Assigned user: @ticket.AssignedUser.UserName</p>
-                }
-                else
-                {
-                    <p> Assigned user: User is deleted</p>
-                }
-
-                @if (ticket.CreatedBy != null)
-                {
-                    <p> Created by: @ticket.CreatedBy.UserName</p>
-                }
-                else
-                {
-                    <p> Assigned user: User not found</p>
-                }
-
-                <a href="tickets/edit/@ticket.Id"> Edit</a>
-                <a href="tickets/delete/@ticket.Id"> Delete</a>
-            </li>
+            <p> There are currently no tickets </p>
         }
-    }
-    else
-    {
-        <p> The value is null</p>
-    }
-</ul>
+
+        <ul class="list-group">
+            @if (all_tickets != null)
+            {
+                @foreach (var ticket in all_tickets)
+                {
+                    if (ticket.isDone == true)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <strong>Ticket:</strong> @ticket.Title, <strong>Type:</strong> @ticket.ticketType, <strong>Status:</strong> Completed, <strong>Assigned to: </strong> @if (ticket.AssignedUser.UserName != null)
+                            {@ticket.AssignedUser.UserName} , <strong>Created by: </strong>  @if (ticket.CreatedBy != null)
+                            {@ticket.CreatedBy.UserName}
+
+                            <a href="tickets/edit/@ticket.Id"> Edit</a>
+                            <a href="tickets/delete/@ticket.Id"> Delete</a>
+                        </div>
+                    }
+                }
+            }
+            else
+            {
+                <p> The value is null</p>
+            }
+        </ul>
+
+        <hr />
+
+        <h3> Created by You </h3>
+
+        @if (createdByCurrentUser.Count() == 0)
+        {
+            <p> There are currently no tickets </p>
+        }
+
+        <ul class="list-group">
+            @if (createdByCurrentUser != null)
+            {
+                @foreach (var ticket in createdByCurrentUser)
+                {
+                    <li class="list-group-item">
+                        <p> Title: @ticket.Title </p>
+                        <p> Type: @ticket.ticketType</p>
+                        @if (ticket.AssignedUser.UserName != null)
+                        {
+                            <p> Assigned user: @ticket.AssignedUser.UserName</p>
+                        }
+                        else
+                        {
+                            <p> Assigned user: User is deleted</p>
+                        }
+
+                        @if (ticket.CreatedBy != null)
+                        {
+                            <p> Created by: @ticket.CreatedBy.UserName</p>
+                        }
+                        else
+                        {
+                            <p> Assigned user: User not found</p>
+                        }
+
+                        <a href="tickets/edit/@ticket.Id"> Edit</a>
+                        <a href="tickets/delete/@ticket.Id"> Delete</a>
+                    </li>
+                }
+            }
+            else
+            {
+                <p> The value is null</p>
+            }
+        </ul>
+    </Authorized>
+    <NotAuthorized>
+        <p> Please Sign up to see tickets.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
 
 
 @code {
@@ -178,11 +173,6 @@
         try
         {
             all_tickets = await http.GetFromJsonAsync<List<Ticket>>($"Tickets/{UserStringId}/UserTickets");
-
-            foreach (var x in all_tickets)
-            {
-                x.AssignedUser = await http.GetFromJsonAsync<ApplicationUser>($"User/{x.Id}/UserForTicket");
-            }
 
         }
         catch (Exception e)

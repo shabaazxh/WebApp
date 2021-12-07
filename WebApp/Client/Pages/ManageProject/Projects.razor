@@ -11,68 +11,76 @@
 @inject AuthenticationStateProvider ASP
 
 <h3> Projects (@all_projects.Count())</h3>
-
-
-<ul class="list-group">
-    <a href="projects/create"> Create Project</a>
-    @if (all_projects != null)
-    {
-        @foreach (var proj in all_projects)
-        {
-
-            <a href="projects/report/@proj.ProjectId" class="list-group-item list-group-item-action">
-                <p> Project: @proj.ProjectName </p>
-                <p> Description: @proj.ProjectDescription </p>
-                <p> Company: @proj.assignedCompanyForProject.CompanyName </p>
-                <p> Start date: @proj.StartDate.Date </p>
-                <p> End date: @proj.EndDate.Date </p>
-                @if (proj.isComplete == true)
+<AuthorizeView>
+    <Authorized>
+        <ul class="list-group">
+            <a href="projects/create"> Create Project</a>
+            @if (all_projects != null)
+            {
+                @foreach (var proj in all_projects)
                 {
-                    <p> Status: Complete </p>
-                }
-                else
-                {
-                    <p>Status: Incomplete </p>
-                }
 
-                @if (proj.AssignedUsersToProject == null)
-                {
-                    <p>Users is coming through as null</p>
-                }
-                else
-                {
-                    <ul>
-                        @foreach (var x in proj.AssignedUsersToProject)
+                    <a href="projects/report/@proj.ProjectId" class="list-group-item list-group-item-action">
+                        <p> Project: @proj.ProjectName </p>
+                        <p> Description: @proj.ProjectDescription </p>
+                        <p> Company: @proj.assignedCompanyForProject.CompanyName </p>
+                        <p> Start date: @proj.StartDate.Date </p>
+                        <p> End date: @proj.EndDate.Date </p>
+                        @if (proj.isComplete == true)
                         {
-                            <p> @x.UserName </p>
+                            <p> Status: Complete </p>
                         }
-                    </ul>
-                }
+                        else
+                        {
+                            <p>Status: Incomplete </p>
+                        }
 
-                <a href="projects/edit/@proj.ProjectId" class="badge badge-primary"> Edit</a>
-                <a href="projects/delete/@proj.ProjectId" class="badge badge-danger"> Delete</a>
+                        @if (proj.AssignedUsersToProject == null)
+                        {
+                            <p>Users is coming through as null</p>
+                        }
+                        else
+                        {
+                            <ul>
+                                <strong> Users on project </strong>
+                                @foreach (var x in proj.AssignedUsersToProject)
+                                {
+                                    <li> @x.UserName </li>
+                                }
+                            </ul>
+                        }
 
-                @*Change progress bar based on project completion status*@
-                @if (proj.isComplete == true)
-                {
-                    <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">Complete</div>
-                    </div>
+                        <a href="projects/edit/@proj.ProjectId" class="badge badge-primary"> Edit</a>
+                        <a href="projects/delete/@proj.ProjectId" class="badge badge-danger"> Delete</a>
+
+                        @*Change progress bar based on project completion status*@
+                        @if (proj.isComplete == true)
+                        {
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">Complete</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @proj.currentProgress%;" aria-valuenow="@proj.currentProgress" aria-valuemin="0" aria-valuemax="100">@proj.currentProgress</div>
+                            </div>
+                        }
+                    </a>
                 }
-                else
-                {
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @proj.currentProgress%;" aria-valuenow="@proj.currentProgress" aria-valuemin="0" aria-valuemax="100">@proj.currentProgress</div>
-                    </div>
-                }
-            </a>
-        }
-    }
-    else
-    {
-        <p> The value is null</p>
-    }
-</ul>
+            }
+            else
+            {
+                <p> The value is null</p>
+            }
+        </ul>
+    </Authorized>
+
+    <NotAuthorized>
+        <p>Please Sign up to be able to see Projects. </p>
+    </NotAuthorized>
+</AuthorizeView>
+
 
 @code {
 

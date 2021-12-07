@@ -10,7 +10,7 @@
 
 @if (projectItem == null)
 {
-<span> Getting the project item to delete</span>
+    <span> Getting the project item to delete</span>
 }
 else
 {
@@ -32,6 +32,12 @@ else
     </EditForm>
 }
 
+@if (canDelete == false)
+{
+    <div class="alert alert-danger" role="alert">
+       You cannot delete this project. There are tickets associated to this project.
+    </div>
+}
 
 @code {
 
@@ -39,6 +45,7 @@ else
     [Parameter] public Guid Id { get; set; }
 
     private Project projectItem { get; set; } = new Project();
+    private bool canDelete = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,14 +53,15 @@ else
         try
         {
             projectItem = await Http.GetFromJsonAsync<Project>($"Projects/{Id}");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
 
         }
 
     }
 
-    private async void SubmitDelete()
+    private async Task SubmitDelete()
 
     {
         try
@@ -61,10 +69,11 @@ else
             var response = await Http.DeleteAsync($"Projects/{projectItem.ProjectId}");
             response.EnsureSuccessStatusCode();
             Navigation.NavigateTo("/projects");
-        } catch (Exception e)
-            {
-
-            }
+        }
+        catch (Exception e)
+        {
+            canDelete = false;
+        }
     }
 
 }

@@ -19,17 +19,17 @@
 }
 else
 {
-    <label> <strong>Project name</strong> </label>
+    <label><strong>Project Name</strong></label>
     <p> @projectItem.ProjectName </p>
-    <label> Project description </label>
+    <label><strong>Project Description</strong></label>
     <p> @projectItem.ProjectDescription </p>
 
-    <label> Start Date</label>
+    <label><strong>Start Date</strong></label>
     <p> @projectItem.StartDate </p>
-    <label> End Date</label>
+    <label><strong>End Date</strong></label>
     <p> @projectItem.EndDate </p>
 
-    <label> Company</label>
+    <label><strong>Company</strong></label>
     <p>
         @if (projectItem.assignedCompanyForProject != null)
         {
@@ -41,7 +41,7 @@ else
     }
         </p>
 
-        <label> <strong>Users on project</strong></label>
+        <label><strong>Users on project</strong></label>
         @if (projectItem.AssignedUsersToProject == null)
         {
             <p>Users is coming through as null</p>
@@ -71,12 +71,27 @@ else
                     if (today.Subtract(x.LastAccessed).Days < 3)
                     {
                         <p>Active: @x.UserName</p>
-                    } 
+                    }
                 }
             </ul>
         }
 
-        <label> Progress </label>
+        <label> <strong>Tickets:</strong></label>
+        @if (associatedTickets == null)
+        {
+            <p>Tickets not found</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var ticket in associatedTickets)
+                {
+                    <li> @ticket.Title</li> 
+                }
+            </ul>
+        }
+
+        <label><strong>Progress</strong>  </label>
         @if (projectItem.isComplete == true)
         {
             <div class="progress">
@@ -100,6 +115,7 @@ else
     [Parameter] public Guid Id { get; set; }
     private Project projectItem { get; set; } = new Project();
     private Company designatedCompany { get; set; } = new Company();
+    private List<Ticket> associatedTickets { get; set; } 
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,6 +124,7 @@ else
             projectItem = await Http.GetFromJsonAsync<Project>($"Projects/{Id}");
 
             projectItem.assignedCompanyForProject = await Http.GetFromJsonAsync<Company>($"Projects/{Id}/CompanyProject");
+            associatedTickets = await Http.GetFromJsonAsync<List<Ticket>>($"Tickets/projects/tickets/{projectItem.ProjectId}");
         }
         catch (Exception e)
         {

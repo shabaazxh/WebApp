@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApp.Server.Data;
 
 namespace WebApp.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211207075656_ticketBelongsToProject")]
+    partial class ticketBelongsToProject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -531,7 +533,7 @@ namespace WebApp.Server.Migrations
                         .HasForeignKey("AssignedUserId");
 
                     b.HasOne("WebApp.Shared.Project", "AssociatedProject")
-                        .WithMany("ticketsForProject")
+                        .WithMany()
                         .HasForeignKey("AssociatedProjectProjectId");
 
                     b.HasOne("WebApp.Shared.ApplicationUser", "CreatedBy")
@@ -548,11 +550,6 @@ namespace WebApp.Server.Migrations
             modelBuilder.Entity("WebApp.Shared.Company", b =>
                 {
                     b.Navigation("WorkingOnProject");
-                });
-
-            modelBuilder.Entity("WebApp.Shared.Project", b =>
-                {
-                    b.Navigation("ticketsForProject");
                 });
 #pragma warning restore 612, 618
         }

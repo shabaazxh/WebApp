@@ -1,9 +1,11 @@
 @using Microsoft.AspNetCore.Components.Authorization;
 @using WebApp.Shared;
 @using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Authorization;
 
 @page "/tickets/create"
 
+@attribute [Authorize]
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider ASP
@@ -15,25 +17,45 @@
     <DataAnnotationsValidator />
 
     <div class="form-group">
-        <label class="custom-control-label"> Name </label>
+        <label class="col-form-label"> Ticket Title </label>
         <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
-        <label class="custom-control-label"> Assign user </label>
-        <InputText id="title" @bind-Value="ticketItem.AssignedUser.UserName" class="form-control" />
+        <label class="col-form-label"> Assign user </label>
+        <InputText id="title" placeholder="User@email.com" @bind-Value="ticketItem.AssignedUser.UserName" class="form-control" />
 
         <label class="mr-sm-2" for="inlineFormCustomSelect">Ticket type</label>
         <InputSelect @bind-Value="ticketItem.ticketType" class="custom-select mr-sm-2" id="inlineFormCustomSelect">
-            <option value="0">Todo Ticket</option>
-            <option value="1">Bug Ticket</option>
-            <option value="2">Support Ticket</option>
+            @foreach (var value in Enum.GetValues(typeof(TicketType)))
+            {
+                <option>@value</option>
+            }
         </InputSelect>
 
-        <ValidationMessage For="@(() => ticketItem.Title)" />
+        <div class="form-group">
+            <label class="col-form-label"> Assign a project </label>
+            <InputText placeholder="Project name" id="inlineFormInputGroup" @bind-Value="@ticketItem.AssociatedProject.ProjectName" class="form-control" />
+
+            <ValidationMessage For="@(() => ticketItem.Title)" />
+        </div>
+
+        @if (ProjectNotFound == true)
+        {
+            <div class="alert alert-danger" role="alert">
+                Project could not be found
+            </div>
+        }
+
+        @if (userNotFound == true)
+        {
+            <div class="alert alert-danger" role="alert">
+                User could not be found, please enter a valid user.
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary">
+
+            <i class="fas fa-save"></i>Create
+        </button>
     </div>
-
-    <button type="submit" class="btn btn-primary">
-
-        <i class="fas fa-save"></i>Create
-    </button>
     <ValidationSummary />
 </EditForm>
 
@@ -42,15 +64,21 @@
 @code {
 
     private Ticket ticketItem { get; set; } = new Ticket();
+    private Project assignProject { get; set; } = new Project();
+
+    private bool ProjectNotFound = false;
+
+    private bool userNotFound = false;
 
     protected override async Task OnInitializedAsync()
     {
+        ticketItem.AssociatedProject = new Project();
         ticketItem.AssignedUser = new ApplicationUser();
-        ticketItem.AssignedUser.UserName = "Type username here";
     }
 
-    private async void CreateNewTicket()
+    private async Task CreateNewTicket()
     {
+        // Get current user information
         var user = (await ASP.GetAuthenticationStateAsync()).User;
         var UserStringId = user.FindFirst(c => c.Type == "sub")?.Value;
 
@@ -60,14 +88,26 @@
             var content = await response.Content.ReadAsStringAsync();
             var ticket = JsonConvert.DeserializeObject<Ticket>(content);
 
-            if (response.IsSuccessStatusCode)
+            // if the ticket is successfully created
+            if (response.StatusCode == System.Net.HttpStatusCode.Created)
+            {
                 Navigation.NavigateTo($"/tickets");
 
-            else if (!response.IsSuccessStatusCode)
-                ticketItem.AssignedUser.UserName = "Failed to find user, try again";
+            }
 
-        }
-        catch (Exception e)
+            // if the user is not found
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                userNotFound = true;
+            }
+
+            // if the project is not found
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                ProjectNotFound = true;
+            }
+
+        } catch (Exception e)
         {
 
         }

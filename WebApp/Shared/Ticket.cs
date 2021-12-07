@@ -19,7 +19,6 @@ namespace WebApp.Shared
     }
     public class Ticket
     {
-
         [Key]
         public Guid Id { get; set; }
         
@@ -27,14 +26,18 @@ namespace WebApp.Shared
         public string Title { get; set; }
         
         public bool isDone { get; set; }
-        
-        public Guid? UserID { get; set; } //who the ticket is assigned to
 
-        public Guid? CreatedByUser { get; set; } //who this ticket is created by
+        public Guid project_id { get; set; }
 
-        public ApplicationUser? CreatedBy { get; set; }
+        public Guid UserID { get; set; } //who the ticket is assigned to
+
+        public Guid CreatedByUser { get; set; } //who this ticket is created by
+
+        public ApplicationUser CreatedBy { get; set; }
         
-        public ApplicationUser? AssignedUser { get; set; }
+        public ApplicationUser AssignedUser { get; set; }
+
+        public Project AssociatedProject { get; set; }
 
         public TicketType ticketType { get; set; }
 

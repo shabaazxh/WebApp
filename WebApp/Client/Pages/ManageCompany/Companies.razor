@@ -6,7 +6,7 @@
 
 @page "/company"
 
-@attribute [AllowAnonymous]
+@attribute [Authorize]
 @inject HttpClient http
 @inject NavigationManager Navigation
 
@@ -20,24 +20,25 @@
     {
         @foreach (var comp in all_Companies)
         {
-            <li class="list-group-item">
-                <p> @comp.CompanyId </p>
-                <p> @comp.CompanyName </p>
-                @if(@comp.WorkingOnProject != null)
-                    {
-                    @foreach(var project in @comp.WorkingOnProject)
-                        {
-                            <ul>
-                                <li>@project.ProjectName</li>
-                            </ul>
-                        }
-                    } else
-                    {
-                        <p> No projects assigned to the company </p>
-                    }
-                <a href="company/edit/@comp.CompanyId"> Edit</a>
-                <a href="company/delete/@comp.CompanyId"> Delete</a>
-            </li>
+<li class="list-group-item">
+    <h5><strong>Company Name: </strong>@comp.CompanyName</h5>
+    @if (@comp.WorkingOnProject != null && comp.WorkingOnProject.Count() != 0)
+    {
+        <strong>Projects</strong>
+        @foreach (var project in @comp.WorkingOnProject)
+        {
+            <ul>
+                <li>@project.ProjectName</li>
+            </ul>
+        }
+    }
+    else
+    {
+        <p> No projects assigned to the company </p>
+    }
+    <a href="company/edit/@comp.CompanyId"> Edit</a>
+    <a href="company/delete/@comp.CompanyId"> Delete</a>
+</li>
         }
     }
     else

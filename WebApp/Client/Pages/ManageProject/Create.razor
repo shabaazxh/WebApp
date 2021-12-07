@@ -16,7 +16,7 @@
 
     <DataAnnotationsValidator />
     <div class="form-group">
-        <label class="custom-control-label"> Assign Users </label>
+        <label class="col-form-label"> Assign Users </label>
         <InputText placeholder="Username" id="inlineFormInputGroup" type="email" @bind-Value="@AssignUser.UserName" class="form-control" />
 
         <button type="submit" class="btn btn-success">Add</button>
@@ -27,7 +27,7 @@
 
     <DataAnnotationsValidator />
     <div class="form-group">
-        <label class="custom-control-label"> Assign Company </label>
+        <label class="col-form-label"> Assign Company </label>
         <InputText placeholder="Company Name" id="inlineFormInputGroup" @bind-Value="designatedCompany.CompanyName" class="form-control" />
 
         <button type="submit" class="btn btn-success">Add</button>
@@ -68,10 +68,13 @@ else
     <ValidationSummary />
 
     <div class="form-group">
-        <label class="custom-control-label"> Name </label>
+        <label class="col-form-label"> Project Name </label>
         <InputText id="title" @bind-Value="projectItem.ProjectName" class="form-control" />
+        <label class="col-form-label"> Project Description </label>
         <InputText id="title" @bind-Value="projectItem.ProjectDescription" class="form-control" />
+        <label class="col-form-label"> Start Date </label>
         <input type="date" @bind-value="projectItem.StartDate" class="form-control" />
+        <label class="col-form-label"> End Date </label>
         <input type="date" @bind-value="projectItem.EndDate" class="form-control" />
 
         <ValidationMessage For="@(() => projectItem.ProjectName)" />
@@ -99,7 +102,7 @@ else
     }
 
     // create the project
-    private async void CreateNewProject()
+    private async Task CreateNewProject()
     {
         projectItem.AssignedUsersToProject = ListOfAllUsers;
 
@@ -123,7 +126,7 @@ else
     }
 
     // Add a user to the project
-    private async void AddUserToProject()
+    private async Task AddUserToProject()
     {
 
         try
@@ -155,7 +158,7 @@ else
         }
     }
 
-    private async void AddCompany()
+    private async Task AddCompany()
     {
         try
         {

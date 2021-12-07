@@ -25,7 +25,7 @@ namespace WebApp.Server.Services
             var client = new SendGridClient(apiKey);
             var msg = new SendGridMessage()
             {
-                From = new EmailAddress("info@example.com", "Identity Demo"),
+                From = new EmailAddress("shabaazh7@gmail.com", "Identity Demo"),
                 Subject = subject,
                 PlainTextContent = message,
                 HtmlContent = message

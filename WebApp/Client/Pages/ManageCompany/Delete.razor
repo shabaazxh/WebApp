@@ -35,6 +35,12 @@ else
     </EditForm>
 }
 
+@if (canDelete == false)
+{
+    <div class="alert alert-danger" role="alert">
+        You cannot delete this company. There are projects associated to this company!
+    </div>
+}
 
 @code {
 
@@ -42,6 +48,7 @@ else
     [Parameter] public Guid Id { get; set; }
 
     private Company companyItem { get; set; } = new Company();
+    private bool canDelete = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,7 +64,7 @@ else
 
     }
 
-    private async void SubmitDelete()
+    private async Task SubmitDelete()
 
     {
         try
@@ -68,7 +75,7 @@ else
         }
         catch (Exception e)
         {
-
+            canDelete = false;
         }
     }
 
