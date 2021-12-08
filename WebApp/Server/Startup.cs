@@ -107,6 +107,7 @@ namespace WebApp.Server
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
+                endpoints.MapSwagger();
                 endpoints.MapFallbackToFile("index.html");
             });
         }
