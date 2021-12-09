@@ -65,7 +65,7 @@ else
 <EditForm Model="@projectItem" OnValidSubmit="@CreateNewProject">
 
     <DataAnnotationsValidator />
-    <ValidationSummary />
+
 
     <div class="form-group">
         <label class="col-form-label"> Project Name </label>
@@ -78,27 +78,47 @@ else
         <input type="date" @bind-value="projectItem.EndDate" class="form-control" />
 
         <ValidationMessage For="@(() => projectItem.ProjectName)" />
+        <hr />
+
+        @if (isCompanyAdded == false)
+        {
+            <div class="alert alert-danger" role="alert">
+                Please assign a company before creating the project.
+            </div>
+        }
+
+        @if (usersAdded == false)
+        {
+            <div class="alert alert-danger" role="alert">
+                You must assign users to the project before creating the project.
+            </div>
+        }
 
         <button type="submit" class="btn btn-primary">Create Project</button>
 
     </div>
 
-
+    <ValidationSummary />
 </EditForm>
+
+
 
 
 
 @code {
 
     private Project projectItem { get; set; } = new Project();
-    private ApplicationUser AssignUser { get; set; } 
+    private ApplicationUser AssignUser { get; set; }
     private List<ApplicationUser> ListOfAllUsers { get; set; } = new List<ApplicationUser>();
     private Company designatedCompany { get; set; } = new Company();
-    
+
+    private bool isCompanyAdded = true;
+    private bool usersAdded = true;
+
     protected override async Task OnInitializedAsync()
     {
         AssignUser = new ApplicationUser();
-        AssignUser.UserName = "Type username to add a user to project";
+        //AssignUser.UserName = "Type username to add a user to project";
     }
 
     // create the project
@@ -112,11 +132,32 @@ else
 
             var content = await response.Content.ReadAsStringAsync();
             var project = JsonConvert.DeserializeObject<Project>(content);
-            response.EnsureSuccessStatusCode();
 
-            if (response.IsSuccessStatusCode) {
+
+            if (response.IsSuccessStatusCode)
+            {
                 Navigation.NavigateTo($"/projects");
             }
+
+            // if the project is trying to be created without a assigned company
+            if(response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                isCompanyAdded = false;
+            } else
+            {
+                isCompanyAdded = true;
+            }
+
+            // if the project is trying to be created without any users
+            if(response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                usersAdded = false;
+            } else
+            {
+                usersAdded = true;
+            }
+
+            response.EnsureSuccessStatusCode();
 
         }
         catch (Exception e)

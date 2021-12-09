@@ -183,10 +183,21 @@ namespace WebApp.Server.Controllers
             {
                 _context.Entry(x).State = EntityState.Unchanged;
             }
-            // Assign correct company
-            project.companyID = project.assignedCompanyForProject.CompanyId;
-            
-            // Set unchaed to prevent duplicate key
+
+            if(project.AssignedUsersToProject.Count() == 0) // check if any users have been assigned
+            {
+                return Conflict(); // if no users assigned, return a conflict response
+            }
+
+            if(project.assignedCompanyForProject == null) // check if a company has been assigned
+            {
+                return Forbid(); // if a company has not been assigned, return forbid response
+            } else
+            {
+                project.companyID = project.assignedCompanyForProject.CompanyId;
+            }
+
+            // Set Unchanged to prevent duplicate key
             _context.Entry(project.assignedCompanyForProject).State = EntityState.Unchanged;
 
             // Add project 
