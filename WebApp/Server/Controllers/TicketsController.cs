@@ -63,7 +63,7 @@ namespace WebApp.Server.Controllers
         {
             try
             {
-                var query = _context.Tickets.Include(u => u.AssignedUser).Include(u => u.CreatedBy).Where(t => t.CreatedByUser.ToString().Equals(currentUserID));
+                var query = _context.Tickets.Include(u => u.AssignedUser).Include(u => u.CreatedBy).Include(p => p.AssociatedProject).Where(t => t.CreatedByUser.ToString().Equals(currentUserID));
                 return await query.ToListAsync();
             }
             catch (Exception e)

@@ -120,30 +120,39 @@
             {
                 @foreach (var ticket in createdByCurrentUser)
                 {
-                    <li class="list-group-item">
-                        <p> Title: @ticket.Title </p>
-                        <p> Type: @ticket.ticketType</p>
-                        @if (ticket.AssignedUser.UserName != null)
-                        {
-                            <p> Assigned user: @ticket.AssignedUser.UserName</p>
-                        }
-                        else
-                        {
-                            <p> Assigned user: User is deleted</p>
-                        }
+            <li class="list-group-item">
+                <p> Title: @ticket.Title </p>
+                <p> Type: @ticket.ticketType</p>
+                @if (ticket.AssignedUser.UserName != null)
+                {
+                    <p> Assigned user: @ticket.AssignedUser.UserName</p>
+                }
+                else
+                {
+                    <p> Assigned user: User is deleted</p>
+                }
 
-                        @if (ticket.CreatedBy != null)
-                        {
-                            <p> Created by: @ticket.CreatedBy.UserName</p>
-                        }
-                        else
-                        {
-                            <p> Assigned user: User not found</p>
-                        }
+                @if (ticket.CreatedBy != null)
+                {
+                    <p> Created by: @ticket.CreatedBy.UserName</p>
+                }
+                else
+                {
+                    <p> Assigned user: User not found</p>
+                }
 
-                        <a href="tickets/edit/@ticket.Id"> Edit</a>
-                        <a href="tickets/delete/@ticket.Id"> Delete</a>
-                    </li>
+                @if (ticket.AssociatedProject != null)
+                {
+                    <p> Created by: @ticket.AssociatedProject.ProjectName</p>
+                }
+                else
+                {
+                    <p> Project could not be found</p>
+                }
+
+                <a href="tickets/edit/@ticket.Id"> Edit</a>
+                <a href="tickets/delete/@ticket.Id"> Delete</a>
+            </li>
                 }
             }
             else
