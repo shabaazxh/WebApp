@@ -44,7 +44,7 @@ namespace WebApp.Server.Controllers
             for(int i = 0; i < companies.Count(); i++)
             {
                 var query = _context.Projects.Where(p => p.isComplete == true) //project is complete
-                    .Where(p => p.EndDate.Date < given_date.Date) //completion date is before future date given
+                    .Where(p => p.CompletedDate.Date < given_date.Date) //completion date is before future date given
                     .Where(p => p.companyID.ToString().Equals(companies[i].CompanyId.ToString()));
                 
                 foreach(var proj in query)
@@ -63,7 +63,8 @@ namespace WebApp.Server.Controllers
                 users_per_project_sum += userCount;
             }
 
-            if (companies.Count < 5 || foundProjects.Count < 5)
+            // Ensure there is enough data for a meaningful prediction to be made
+            if (companies.Count < 7 || foundProjects.Count < 7)
             {
                 d.Add("not_enough_data",0);
                 return d;

@@ -17,10 +17,16 @@
     <DataAnnotationsValidator />
 
     <div class="form-group">
+
         <label class="col-form-label"> Ticket Title </label>
         <InputText id="title" @bind-Value="ticketItem.Title" class="form-control" />
-        <label class="col-form-label"> Assign user </label>
-        <InputText id="title" placeholder="User@email.com" @bind-Value="ticketItem.AssignedUser.UserName" class="form-control" />
+        <ValidationMessage For="@(() => ticketItem.Title)" />
+
+        <div class="form-group">
+            <label class="col-form-label"> Assign user </label>
+            <InputText id="inlineFormInputGroup" placeholder="User@email.com" @bind-Value="ticketItem.AssignedUser.UserName" class="form-control" />
+            <ValidationMessage For="@(() => ticketItem.AssignedUser.UserName)" />
+        </div>
 
         <label class="mr-sm-2" for="inlineFormCustomSelect">Ticket type</label>
         <InputSelect @bind-Value="ticketItem.ticketType" class="custom-select mr-sm-2" id="inlineFormCustomSelect">
@@ -32,9 +38,9 @@
 
         <div class="form-group">
             <label class="col-form-label"> Assign a project </label>
-            <InputText placeholder="Project name" id="inlineFormInputGroup" @bind-Value="@ticketItem.AssociatedProject.ProjectName" class="form-control" />
+            <InputText placeholder="Project name" id="inlineFormInputGroup" @bind-Value="ticketItem.AssociatedProject.ProjectName" class="form-control" />
 
-            <ValidationMessage For="@(() => ticketItem.Title)" />
+            <ValidationMessage For="@(() => ticketItem.AssociatedProject.ProjectName)" />
         </div>
 
         @if (ProjectNotFound == true)
@@ -48,6 +54,13 @@
         {
             <div class="alert alert-danger" role="alert">
                 User could not be found, please enter a valid user.
+            </div>
+        }
+
+        @if (areFieldsCorrectlyFilled == false)
+        {
+            <div class="alert alert-danger" role="alert">
+                Please make sure you fill in all the above fields.
             </div>
         }
 
@@ -69,6 +82,8 @@
     private bool ProjectNotFound = false;
 
     private bool userNotFound = false;
+
+    private bool areFieldsCorrectlyFilled = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,15 +112,30 @@
             }
 
             // if the user is not found
-            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 userNotFound = true;
+            } else
+            {
+                userNotFound = false;
             }
 
             // if the project is not found
             if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {
                 ProjectNotFound = true;
+            } else
+            {
+                ProjectNotFound = false;
+            }
+
+            // if the fields are not correctly filled in to create a ticket item
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                areFieldsCorrectlyFilled = false;
+            } else
+            {
+                areFieldsCorrectlyFilled = true;
             }
 
         } catch (Exception e)

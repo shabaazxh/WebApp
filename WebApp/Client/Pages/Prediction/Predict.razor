@@ -15,20 +15,39 @@
 
 <EditForm Model="selectedDate" OnValidSubmit="InitPrediction">
 
+    <div class="alert alert-info" role="alert">
+        Note: In order to make a prediction make sure there is enough data. There must be a minimum of 7 Companies and a minimum of
+        7 Projects completed.
+    </div>
+
     <div class="form-group">
         <label for="formGroupExampleInput" class="form-label">Select a date for prediction</label>
         <div class="input-group mb-3">
-            <span class="input-group-text" id="inputGroup-sizing-default">Default</span>
+            <span class="input-group-text" id="inputGroup-sizing-default">Date</span>
             <input type="date" class="form-control" id="floatingInputValue" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" @bind-value="selectedDate">
         </div>
         <button type="submit" class="btn btn-primary">Start Prediction</button>
     </div>
 
+    <h1>Prediction: </h1>
+
     @if (predictedInfo.Count != 0 && !predictedInfo.ContainsKey("not_enough_data"))
     {
-        <h1>Prediction: </h1>
-        <p> Projects per company count: @predictedInfo["projects"] </p>
-        <p> Users per project count: @predictedInfo["users"] </p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Estimated Projects per company</th>
+                    <th scope="col">Estimated Users required per project</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@predictedInfo["projects"] </td>
+                    <td>@predictedInfo["users"] </td>
+                </tr>
+            </tbody>
+
+        </table>
     }
     else
     {

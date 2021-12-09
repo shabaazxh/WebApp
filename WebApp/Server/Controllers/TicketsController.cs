@@ -31,7 +31,7 @@ namespace WebApp.Server.Controllers
         {
             try
             {
-                var query = _context.Tickets.Where(u => u.project_id.ToString().Equals(projectID.ToString())); //find all tickets for current project
+                var query = _context.Tickets.Include(t => t.AssignedUser).Include(t => t.CreatedBy).Where(u => u.project_id.ToString().Equals(projectID.ToString())); //find all tickets for current project
                 return await query.ToListAsync();
             }
             catch (Exception e)
@@ -160,9 +160,10 @@ namespace WebApp.Server.Controllers
             try
             {
                 findProject = await _context.Projects.Where(p => p.ProjectName.Equals(ticket.AssociatedProject.ProjectName)).FirstAsync();
-            } catch (Exception)
+            
+            } catch (InvalidOperationException)
             {
-                return Forbid();
+                return Forbid(); // if no project could be found with the given name
             }
 
             ApplicationUser userValid;
@@ -190,7 +191,7 @@ namespace WebApp.Server.Controllers
 
             } catch (InvalidOperationException)
             {
-                return BadRequest();
+                return NotFound();
             }
 
         }

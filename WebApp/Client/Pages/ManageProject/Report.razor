@@ -10,12 +10,12 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
-<h3> Report for project: @projectItem.ProjectName </h3>
+<h2> Report for project: @projectItem.ProjectName </h2>
 
 
 @if (projectItem == null)
 {
-    <span> Getting the projectItem item to edit</span>
+    <span> Something went wrong when trying to load the project item</span>
 }
 else
 {
@@ -33,7 +33,9 @@ else
     @if (projectItem.isComplete == true)
     {
         <p>Completed: @projectItem.CompletedDate</p>
-    } else {
+    }
+    else
+    {
         <p>Incomplete</p>
     }
     <label><strong>Company</strong></label>
@@ -48,58 +50,109 @@ else
     }
         </p>
 
-        <label><strong>Users on project</strong></label>
-        @if (projectItem.AssignedUsersToProject == null)
-        {
-            <p>Users is coming through as null</p>
-        }
-        else
-        {
-            <ul>
-                @foreach (var x in projectItem.AssignedUsersToProject)
+        <h3><strong>Users working on project</strong></h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Email</th>
+                    <th scope="col">Last Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (projectItem.AssignedUsersToProject == null)
                 {
-                    <p> @x.UserName </p>
+                    <p>Users could not be loaded</p>
                 }
-            </ul>
-        }
-
-        <label> <strong>Active Users</strong></label>
-        @if (projectItem.AssignedUsersToProject == null)
-        {
-            <p>Users is coming through as null</p>
-        }
-        else
-        {
-            <ul>
-                @foreach (var x in projectItem.AssignedUsersToProject)
+                else
                 {
-                    DateTime today = DateTime.Now;
-                    TimeSpan diff = today.Subtract(x.LastAccessed);
-                    if (today.Subtract(x.LastAccessed).Days < 3)
+
+                    @foreach (var x in projectItem.AssignedUsersToProject)
                     {
-                        <p>Active: @x.UserName</p>
+
+                        <tr>
+                            <td> @x.UserName </td>
+                            <td>@x.LastAccessed</td>
+                        </tr>
                     }
                 }
-            </ul>
-        }
+            </tbody>
+        </table>
 
-        <label> <strong>Tickets:</strong></label>
-        @if (associatedTickets == null)
-        {
-            <p>Tickets not found</p>
-        }
-        else
-        {
-            <ul>
-                @foreach (var ticket in associatedTickets)
+        <h3> <strong>Active Users</strong></h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Email</th>
+                    <th scope="col">Last Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (projectItem.AssignedUsersToProject == null)
                 {
-                    <li> @ticket.Title</li>
-
+                    <p>Users is coming through as null</p>
                 }
-            </ul>
-        }
+                else
+                {
+                    @foreach (var x in projectItem.AssignedUsersToProject)
+                    {
+                        DateTime today = DateTime.Now;
+                        TimeSpan diff = today.Subtract(x.LastAccessed);
+                        if (today.Subtract(x.LastAccessed).Days < 3)
+                        {
+                            <tr>
+                                <td>@x.UserName</td>
+                                <td>@x.LastAccessed</td>
+                            </tr>   
+                        }
+                    }
+                }
+            </tbody>
+        </table>
 
-        <label><strong>Progress</strong>  </label>
+
+        <h3><strong>Tickets:</strong></h3>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Ticket Type</th>
+                    <th scope="col">Assigned User</th>
+                    <th scope="col">Created by</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @if (associatedTickets == null)
+                {
+                    <p>Tickets could not be loaded</p>
+                }
+                else
+                {
+                    @foreach (var ticket in associatedTickets)
+                    {
+                        <tr>
+                            <td>@ticket.Title</td>
+                            @if(ticket.isDone)
+                            {
+                                <td>Complete</td>
+                            } else
+                            {
+                                <td>Incomplete</td>
+                            }
+                            <td>@ticket.ticketType</td>
+                            <td>@ticket.AssignedUser.Email</td>
+                            <td>@ticket.CreatedBy.Email</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+
+
+        <h3><strong>Progress</strong>  </h3>
         @if (projectItem.isComplete == true)
         {
             <div class="progress">
@@ -113,7 +166,7 @@ else
             </div>
         }
 
-
+        <hr />
         <button type="submit" class="btn btn-primary" @onclick="BackButton">Back </button>
     }
 
